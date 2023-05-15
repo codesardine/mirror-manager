@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="-mt-24 mx-auto self-center">
+    <div class="card w-96 bg-base-100 shadow-xl py-2 px-4">
+        <h3 class="text-xl font-bold mb-2">Sign Up</h3>
+        <p class="text-center py-4 text-lg">For mirror owners</p>
+            <form method="POST" action="/signup" class="grid grid-cols-1 gap-4">
+                <input name=email type="email" placeholder="{{ email }} Your Email" class="input input-bordered input-success w-full" autofocus=""/>
+                <input name=name type="text" placeholder="Your Name" class="input input-bordered input-success w-full" />
+                <input name=password type="password" placeholder="Your Password" class="input input-bordered input-success w-full" />
+                <input name=password_confirm type="password" placeholder="Confirm Password" class="input input-bordered input-success w-full" />
+                <button class="btn btn-s btn-success mb-2">Sign Up</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

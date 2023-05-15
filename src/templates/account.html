@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="w-full max-w-screen-sm mx-auto -mt-24 self-center">
+  <div class="card bg-base-100 shadow-xl py-2 px-4 grid grid-cols-1 gap-2">
+      <h3 class="text-xl font-bold">My Account</h3>
+      <div class="text-center">Email: {{ account.email }}</div>
+      <div class="text-center">Name: {{ account.name }}</div>
+      <form method="POST" action="/account" class="grid grid-cols-1 gap-2 mt-2">
+        <div class="flex items-center gap-1">
+          <input type="checkbox" id="delete-modal" class="modal-toggle" />
+          <div class="modal">
+            <div class="modal-box bg-base-content text-neutral shadow">
+              <h3 class="font-bold text-lg">This action is irreversible.</h3>
+              <p class="py-4">You are about to delete your account and mirror data, this cannot be undone, are you sure?</p>
+              <div class="modal-action">
+                <script>
+                  function deleteAccount(el) {
+                    el.parentElement.querySelector("#delete-account").checked = true
+                    el.parentElement.parentElement.parentElement.parentElement.parentElement.submit()
+                  }
+                </script>
+                <label for="delete-modal" class="btn btn-accent btn-sm shadow">Cancel</label>
+                <label for="delete-account" class="btn btn-error btn-sm shadow" onclick="deleteAccount(this)">Delete</label>
+                <input name="delete-account" class="hidden" id="delete-account" type="checkbox"/>
+                <input name="account_id" type="text" class="hidden" value="{{ account.id }}"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+      <div class="text-right mt-4 mb-2">
+        {% if not account.is_confirmed %}
+        <a href="{{ url_for('account.resend_confirmation') }}" class="btn btn-success py-2 btn-sm mr-2">Resend</a>
+        {% endif %}
+        <label for="delete-modal" class="btn btn-error py-2 btn-sm">Delete Account</label>
+  </div>
+</div>
+{% endblock %}

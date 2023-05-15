@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "Mirrors Manager"
+version = "0.0.1"
+description = "Tool to manage Manjaro mirrors."
+authors = ["Vitor Lopes"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Flask = "^2.2.3"
+flask-sqlalchemy = "^3.0.3"
+flask-mail = "^0.9.1"
+flask-migrate = "^4.0.4"
+pycountry = "^22.3.5"
+requests = "^2.29.0"
+apscheduler = "^3.10.1"
+flask-login = "^0.6.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

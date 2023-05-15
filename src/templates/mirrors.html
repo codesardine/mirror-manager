@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="w-full max-w-screen-lg mx-auto mt-8">
+    <div class="card bg-base-100 shadow-xl py-2 px-4">
+        <h3 class="text-xl font-bold py-2">My Mirrors</h3>
+        {% if mirrors %}
+            {% for mirror in mirrors %}
+            <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-2 mt-2">
+              <div class="flex items-center gap-1">
+                <span class="label-text w-full">{{ mirror.address }}</span> 
+                  <span class="w-full">
+                    {% if mirror.http %}
+                      <a target="blank" href="http://{{ mirror.address }}" class="underline">http</a>
+                    {% endif %}
+                    {% if mirror.https %}
+                      <a  target="blank" href="https://{{ mirror.address }}" class="underline">https</a>
+                    {% endif %}
+                    {% if mirror.rsync %}
+                    <a  target="blank" href="rsync://{{ mirror.address }}" class="underline">rsync</a>
+                    {% endif %}
+                  </span>
+                  <label class="cursor-pointer label" onclick="disableMirror(this)">
+                      <input name="active" type="checkbox" class="toggle toggle-success" {% if mirror.active %}checked{% endif %} />
+                      <input name="mirror-id" type="text" class="hidden" value="{{ mirror.id }}"/>
+                  </label>
+                <label for="delete-modal-{{ mirror.id }}" class="btn btn-error btn-xs ml-2 relative shadow">Delete</label>
+                <input type="checkbox" id="delete-modal-{{ mirror.id }}" class="modal-toggle" />
+                <div class="modal">
+                  <div class="modal-box bg-base-content text-neutral shadow">
+                    <h3 class="font-bold text-lg">This action is irreversible.</h3>
+                    <p class="py-4">You are about to delete "{{ mirror.address }}" this cannot be undone, are you sure?</p>
+                    <div class="modal-action">
+                      <label for="delete-modal-{{ mirror.id }}" class="btn btn-accent btn-sm shadow">Cancel</label>
+                      <label for="delete-mirror-{{ mirror.id }}" class="btn btn-error btn-sm shadow" onclick="deleteMirror(this, '{{ mirror.id }}')">Delete</label>
+                      <input name="delete-mirror-{{ mirror.id }}" class="hidden" id="delete-mirror-{{ mirror.id }}" type="checkbox"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </form>
+            {% endfor %}
+            {% else %}
+              <p>No mirrors yet</p>
+            {% endif %}
+        
+        <input type="checkbox" id="add-modal" class="modal-toggle" />
+        <div class="modal">
+        <div class="modal-box bg-base-content text-neutral">
+            <h2 class="pb-4 text-center text-lg ca">Add a Mirror</h2>
+            <p class="text-xs mb-4">Make sure your server has directory listing active and files can be reached by Manjaro mirror bot.</p>
+            <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-4">
+                <input name="mirror" type="text" placeholder="Mirror Address" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
+                <input name="country" type="text" placeholder="Country" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
+                <div class="grid grid-cols-1 gap-2">
+                    <input name="ip-whitelist" type="text" placeholder="Rsync ip's whitelist space separated" class="input bg-white text-neutral focus:bg-primary-content w-full" style="word-spacing: 10px;" autofocus=""/>
+                  </div>
+            <div class="modal-action">
+                <label for="add-modal" class="btn btn-accent btn-sm shadow">Cancel</label>
+                <button class="btn btn-success btn-sm shadow">Add</button>
+            </div>
+        </form>
+        </div>
+        </div>
+
+        <div class="text-right mt-4 mb-2">
+            <label for="add-modal" class="btn btn-success py-2 btn-sm">add mirror</label>
+      </div>
+    </div>
+</div>
+<script>
+  function deleteMirror(el, id) {
+    let mirror = document.querySelector(`#delete-mirror-${id}`).checked = true
+    el.parentElement.parentElement.parentElement.parentElement.parentElement.submit()
+  }
+  function disableMirror(el) {
+    setTimeout(function() {
+      el.parentElement.parentElement.submit()
+    }, 250)
+  }
+</script>
+{% endblock %}

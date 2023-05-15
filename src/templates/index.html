@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="overflow-x-auto self-start mt-8 bg-base-100 rounded-2xl w-full max-w-screen-lg mx-auto">
+  <h1 class="w-full text-center py-4 text-xl">Public Mirrors</h1>
+  <table class="table table-zebra w-full">
+    <thead>
+      <tr>
+        <th>Mirror</th>
+        <th>Country</th>
+        <th>Last Sync</th>
+        <th>Protocols</th>
+        <th>Access Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mirror in mirrors %}
+      {% if mirror.active %}
+      <tr>
+        <td>{{ mirror.address }}</td>
+        <td class="capitalize">{{ mirror.country }}</td>
+        <td>
+          {% if mirror.last_sync %}
+          {{ mirror.last_sync }}
+          {% else %}
+          In queue
+          {% endif %}
+        </td>
+        <td>
+          {% if mirror.http %}
+          <a  target="blank" href="http://{{ mirror.address }}" class="underline">http</a>
+          {% endif %}
+          {% if mirror.https %}
+          <a  target="blank" href="https://{{ mirror.address }}" class="underline">https</a>
+          {% endif %}
+          {% if mirror.rsync %}
+          <a  target="blank" href="rsync://{{ mirror.address }}" class="underline">rsync</a>
+          {% endif %}
+        </td>
+        <td>
+          {{ mirror.speed }} 
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="-mt-24 mx-auto self-center">
+    <div class="card w-96 bg-base-100 shadow-xl py-2 px-4">
+        <h3 class="text-xl font-bold">Login</h3>
+        <p class="text-center py-4 text-lg">Manage your mirrors</p>
+            <form method="POST" action="/login" class="grid grid-cols-1 gap-4">
+                <input name="email" type="email" placeholder="Your Email" class="input input-bordered input-success w-full" autofocus=""/>
+                <input name="password" type="password" placeholder="Your Password" class="input input-bordered input-success w-full" />
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                      <span class="label-text">Remember me</span> 
+                      <input name="remember" type="checkbox" checked="checked" class="checkbox checkbox-success" />
+                    </label>
+                  </div>
+                <button class="btn btn-success mb-2">Login</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
