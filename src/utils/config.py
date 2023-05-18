@@ -13,8 +13,8 @@ settings = {
     "MAIL_DEBUG": False,
     "MAIL_USERNAME": os.environ.get("MAIL_USERNAME"),
     "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD"),
-    "CHECK_BRANCHES_TIMEOUT_MINUTES": 1,
-    "CHECK_OFFLINE_MIRRORS_HOURS": 72,
+    "CHECK_BRANCHES_TIMEOUT_MINUTES": 15,
+    "CHECK_OFFLINE_MIRRORS_HOURS": 1,
     "MASTER_RSYNC": "repo.nix.dk/manjaro/",
     "BRANCHES": ("stable", "testing", "unstable")
 }
