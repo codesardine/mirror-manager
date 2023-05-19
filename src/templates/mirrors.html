@@ -3,7 +3,29 @@
 {% block content %}
 <div class="w-full max-w-screen-lg mx-auto mt-8">
     <div class="card bg-base-100 shadow-xl py-2 px-4">
-        <h3 class="text-xl font-bold py-2">My Mirrors</h3>
+        <input type="checkbox" id="add-modal" class="modal-toggle" />
+        <div class="modal">
+        <div class="modal-box bg-base-content text-neutral">
+            <h2 class="pb-4 text-center text-lg ca">Add a Mirror</h2>
+            <p class="text-xs mb-4">Make sure your server has directory listing active and files can be reached by Manjaro mirror bot.</p>
+            <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-4">
+                <input name="mirror" type="text" placeholder="Mirror Address" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
+                <input name="country" type="text" placeholder="Country" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
+                <div class="grid grid-cols-1 gap-2">
+                    <input name="ip-whitelist" type="text" placeholder="Rsync ip's whitelist space separated" class="input bg-white text-neutral focus:bg-primary-content w-full" style="word-spacing: 10px;" autofocus=""/>
+                </div>
+                <div class="modal-action">
+                    <label for="add-modal" class="btn btn-accent btn-sm shadow">Cancel</label>
+                    <button class="btn btn-success btn-sm shadow">Add</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    
+        <div class="text-right py-2">
+          <h3 class="text-xl font-bold float-left">My Mirrors</h3>
+          <label for="add-modal" class="btn btn-success py-2 btn-sm float-right">add mirror</label>
+      </div>
         {% if mirrors %}
             {% for mirror in mirrors %}
             <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-2 mt-2">
@@ -44,30 +66,6 @@
             {% else %}
               <p>No mirrors yet</p>
             {% endif %}
-        
-        <input type="checkbox" id="add-modal" class="modal-toggle" />
-        <div class="modal">
-        <div class="modal-box bg-base-content text-neutral">
-            <h2 class="pb-4 text-center text-lg ca">Add a Mirror</h2>
-            <p class="text-xs mb-4">Make sure your server has directory listing active and files can be reached by Manjaro mirror bot.</p>
-            <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-4">
-                <input name="mirror" type="text" placeholder="Mirror Address" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
-                <input name="country" type="text" placeholder="Country" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
-                <div class="grid grid-cols-1 gap-2">
-                    <input name="ip-whitelist" type="text" placeholder="Rsync ip's whitelist space separated" class="input bg-white text-neutral focus:bg-primary-content w-full" style="word-spacing: 10px;" autofocus=""/>
-                  </div>
-            <div class="modal-action">
-                <label for="add-modal" class="btn btn-accent btn-sm shadow">Cancel</label>
-                <button class="btn btn-success btn-sm shadow">Add</button>
-            </div>
-        </form>
-        </div>
-        </div>
-
-        <div class="text-right mt-4 mb-2">
-            <label for="add-modal" class="btn btn-success py-2 btn-sm">add mirror</label>
-      </div>
-    </div>
 </div>
 <script>
   function deleteMirror(el, id) {
