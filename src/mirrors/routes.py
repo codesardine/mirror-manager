@@ -133,11 +133,18 @@ def mirror_post():
         try:
             is_country = pycountry.countries.get(name=country)
             if not is_country:
-                flash(f'Invalid country "{country}"', "error")
-                return redirect(url_for('mirror.my_mirrors'))
+                fuzzy_search = pycountry.countries.search_fuzzy(country)
+                new_country = fuzzy_search[0].name
 
+                if new_country and "," in new_country:
+                    country = new_country.split(",")[0]
+                elif new_country and "," not in new_country:
+                    country = new_country
+                else:
+                    flash(f'Invalid country {country}', "error")
+                    return redirect(url_for('mirror.my_mirrors'))
         except:
-            flash('Invalid country', "error")
+            flash(f'Invalid country {country}', "error")
             return redirect(url_for('mirror.my_mirrors'))                          
         
         flash('Thank you, mirrors are updated', "success")
