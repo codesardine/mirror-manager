@@ -2,7 +2,11 @@
 
 {% block content %}
 <div class="overflow-x-auto self-start mt-8 bg-base-100 rounded-2xl w-full max-w-screen-lg mx-auto">
-  <h1 class="w-full text-center py-4 text-xl">Public Mirrors</h1>
+  <div class="text-xs py-2 px-4 font-semibold capitalize text-gray-800 flex gap-2">
+    <p class="bg-info px-2 py-1 rounded">total mirrors: {{ total }}</p>
+    <p class="bg-info px-2 py-1 rounded">inactive: {{ inactive }}</p>
+  </div>
+  <h1 class="w-full text-center py-4 text-xl font-semibold">Public Mirrors</h1>
   <table class="table table-zebra w-full">
     <thead>
       <tr>
