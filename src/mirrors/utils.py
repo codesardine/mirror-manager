@@ -17,7 +17,7 @@ def state_check(protocol, address, branch=None):
         headers = {
             "User-Agent": "Manjaro Mirror Manager/1.0"
         }
-        response = requests.get(f'{protocol}://{address}/{file}', headers=headers)
+        response = requests.get(f'{protocol}://{address}/{file}', headers=headers, timeout=3)
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
@@ -45,49 +45,60 @@ def get_state_contents(file):
             sync["last_sync"] = date
     return sync
 
-def validate_state(mirror, address, branch, protocol, master=False):
-    server = state_check(protocol, address=address, branch=branch)
+def validate_state(mirror, address, protocol, master=False, branch=None):
+    if branch:
+        server = state_check(protocol, address=address, branch=branch)
+    else:
+        server = state_check(protocol, address=address)
+        
     if server["state_file_exists"]:
-        if not master:
-            mirror.speed = server["access_time"]
-            mirror.http = True
-            master_mirror = MasterRepo().query.first()
-
-        def set_status(mirror_hash, master_hash, is_in_sync):
-            if mirror_hash != master_hash:
-                is_in_sync = False
-            else:
-                is_in_sync = True
-
         state_file = get_state_contents(server["state_file"])
-        if branch == "stable":
-            mirror.stable_hash = state_file["hash"].strip()
-            mirror.stable_last_sync = state_file["last_sync"]
+        if not branch:
+            mirror.last_sync = state_file["last_sync"]
+            if protocol == "https":
+                mirror.https = True
+            elif protocol == "http":
+                mirror.http = True
+        else:
             if not master:
-                set_status(
-                    mirror.stable_hash,
-                    master_mirror.stable_hash,
-                    mirror.stable_is_sync
-                    )            
+                mirror.speed = server["access_time"]
+                mirror.http = True
+                master_mirror = MasterRepo().query.first()
 
-        elif branch == "testing":
-            mirror.testing_hash = state_file["hash"].strip()
-            mirror.testing_last_sync = state_file["last_sync"]
-            if not master:set_status(
-                    mirror.testing_hash,
-                    master_mirror.testing_hash,
-                    mirror.testing_is_sync
-                    ) 
+            def set_status(mirror_hash, master_hash, is_in_sync):
+                if mirror_hash != master_hash:
+                    is_in_sync = False
+                else:
+                    is_in_sync = True
+            
+            if branch == "stable":
+                mirror.stable_hash = state_file["hash"].strip()
+                mirror.stable_last_sync = state_file["last_sync"]
+                if not master:
+                    set_status(
+                        mirror.stable_hash,
+                        master_mirror.stable_hash,
+                        mirror.stable_is_sync
+                        )            
 
-        elif branch == "unstable":
-            mirror.unstable_hash = state_file["hash"].strip()
-            mirror.unstable_last_sync = state_file["last_sync"]
-            if not master:
-                set_status(
-                    mirror.unstable_hash,
-                    master_mirror.unstable_hash,
-                    mirror.unstable_is_sync
-                    ) 
+            elif branch == "testing":
+                mirror.testing_hash = state_file["hash"].strip()
+                mirror.testing_last_sync = state_file["last_sync"]
+                if not master:set_status(
+                        mirror.testing_hash,
+                        master_mirror.testing_hash,
+                        mirror.testing_is_sync
+                        ) 
+
+            elif branch == "unstable":
+                mirror.unstable_hash = state_file["hash"].strip()
+                mirror.unstable_last_sync = state_file["last_sync"]
+                if not master:
+                    set_status(
+                        mirror.unstable_hash,
+                        master_mirror.unstable_hash,
+                        mirror.unstable_is_sync
+                        ) 
     else:
         if not master:
             if "https" in protocol:
@@ -101,15 +112,28 @@ def validate_state(mirror, address, branch, protocol, master=False):
 def validate_branches():
     branches = settings["BRANCHES"]
     mirrors = Mirror().query.filter_by(active=True).all()
-    for mirror in mirrors:
-        if mirror.https and mirror.http or mirror.https and not mirror.http:         
+    import concurrent.futures
+    futures = []
+    with concurrent.futures.ThreadPoolExecutor(60) as executor:
+        for mirror in mirrors:
+            protocols = ("http", "https")
+            for protocol in protocols:
+                futures.append(executor.submit(
+                        validate_state(mirror, mirror.address, protocol)
+                        ))
+                
             for branch in branches:
-                    validate_state(mirror, mirror.address, branch, "https")
-        elif mirror.http:         
-            for branch in branches:
-                    validate_state(mirror, mirror.address, branch, "http")
-        else:
-            if not mirror.user_notified:
+                if mirror.https:
+                    futures.append(executor.submit(
+                            validate_state(mirror, mirror.address, "https", branch=branch)
+                            ))
+                elif mirror.http:
+                    futures.append(executor.submit(
+                            validate_state(mirror, mirror.address, "http", branch=branch)
+                            ))
+
+        for mirror in mirrors:
+            if not mirror.user_notified and not mirror.http and not mirror.https:
                 from ..utils.email import send_email
                 from ..account.models import Account
                 user = Account().query.filter_by(id=mirror.account_id)
@@ -121,7 +145,7 @@ def validate_branches():
                     )
                 mirror.user_notified = True
                 db.session.add(mirror)        
-                db.session.commit()
+        db.session.commit()
 
 def check_offline_mirrors():
     mirrors = Mirror().query.filter_by(active=False).all()
@@ -161,13 +185,8 @@ def populate_master_state():
     master_mirror.master_hash = file["hash"]
     master_mirror.master_last_sync = file["last_sync"]
     db.session.add(master_mirror)  
-    db.session.commit()
+    db.session.commit()    
 
     for branch in branches:
-       validate_state(master_mirror, repo, branch, protocol, master=True)
-
-            
-
-
-
+       validate_state(master_mirror, repo, protocol, branch=branch, master=True)    
     
