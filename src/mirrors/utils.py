@@ -4,6 +4,8 @@ from ..mirrors.models import Mirror, MasterRepo
 from datetime import datetime 
 from ..utils.extensions import db
 from ..utils.config import settings
+import concurrent.futures
+
 
 def state_check(protocol, address, branch=None):    
     if branch:
@@ -55,10 +57,6 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
         state_file = get_state_contents(server["state_file"])
         if not branch:
             mirror.last_sync = state_file["last_sync"]
-            if protocol == "https":
-                mirror.https = True
-            elif protocol == "http":
-                mirror.http = True
         else:
             if not master:
                 mirror.speed = server["access_time"]
@@ -112,7 +110,6 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
 def validate_branches():
     branches = settings["BRANCHES"]
     mirrors = Mirror().query.filter_by(active=True).all()
-    import concurrent.futures
     futures = []
     with concurrent.futures.ThreadPoolExecutor(60) as executor:
         for mirror in mirrors:
@@ -141,7 +138,7 @@ def validate_branches():
                 send_email(
                     user.email,
                     "Issues found with your manjaro mirror",
-                    "Your Manjaro mirror has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror whitin 72h."
+                    f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
                     )
                 mirror.user_notified = True
                 db.session.add(mirror)        
@@ -167,8 +164,17 @@ def check_offline_mirrors():
                     mirror.https = True
                 elif "http" in protocol:
                     mirror.http = True
-
-        db.session.add(mirror)        
+                    
+        if mirror.active:
+            from ..utils.email import send_email
+            from ..account.models import Account
+            user = Account().query.filter_by(id=mirror.account_id)
+            send_email(
+                user.email,
+                "Your mirror is back online",
+                f"Your Manjaro mirror {mirror.address}, has been activated."
+                )
+            db.session.add(mirror)        
     
     db.session.commit()
 
