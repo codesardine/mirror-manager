@@ -24,8 +24,6 @@ def mirrors():
                 protocols.append("http")
             if mirror.https:
                 protocols.append("https")
-            if mirror.rsync:
-                protocols.append("rsync")
 
             mirrors.append(template)
 
@@ -36,12 +34,19 @@ def mirrors():
     response.status_code = 200
     return response
 
-
 @mirror.route("/mirrors")
 @login_required
 @check_is_confirmed
 def my_mirrors():
     return render_template('mirrors.html', mirrors=current_user.mirror)
+
+@mirror.route("/mirrors/rsync")
+@login_required
+@check_is_confirmed
+def rsync_mirrors():
+    mirrors = Mirror().query.filter_by(rsync=True).all()
+    inactive = Mirror().query.filter_by(rsync=True, active=False).all()
+    return render_template('rsync.html', mirrors=mirrors, total=len(mirrors), inactive=len(inactive))
 
 @mirror.route('/mirrors', methods=['POST'])
 @login_required

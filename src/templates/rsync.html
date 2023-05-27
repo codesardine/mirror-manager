@@ -6,15 +6,14 @@
     <p class="bg-info px-2 py-1 rounded">total mirrors: {{ total }}</p>
     <p class="bg-info px-2 py-1 rounded">inactive: {{ inactive }}</p>
   </div>
-  <h1 class="w-full text-center py-4 text-xl font-semibold">Public Mirrors</h1>
+  <h1 class="w-full text-center py-4 text-xl font-semibold">Rsync Mirrors</h1>
+  <p class="text-center mb-4">Mirrors you can sync from</p>
   <table class="table table-zebra w-full">
     <thead>
       <tr>
         <th>Mirror</th>
         <th>Country</th>
-        <th>Last Sync</th>
-        <th>Protocols</th>
-        <th>Access Time</th>
+        <th>Rsync</th>
       </tr>
     </thead>
     <tbody>
@@ -24,22 +23,7 @@
         <td>{{ mirror.address }}</td>
         <td class="capitalize">{{ mirror.country }}</td>
         <td>
-          {% if mirror.last_sync %}
-          {{ mirror.last_sync }}
-          {% else %}
-          In queue
-          {% endif %}
-        </td>
-        <td>
-          {% if mirror.http %}
-          <a  target="blank" href="http://{{ mirror.address }}" class="underline">http</a>
-          {% endif %}
-          {% if mirror.https %}
-          <a  target="blank" href="https://{{ mirror.address }}" class="underline">https</a>
-          {% endif %}
-        </td>
-        <td>
-          {{ mirror.speed }} 
+          rsync://{{ mirror.address }}
         </td>
       </tr>
       {% endif %}
