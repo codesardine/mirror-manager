@@ -1,7 +1,5 @@
 from flask_login import UserMixin
-from ..utils.extensions import db
-from werkzeug.security import generate_password_hash
-from datetime import datetime
+from src.utils.extensions import db
 
 
 class Account(UserMixin, db.Model):
@@ -13,16 +11,4 @@ class Account(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     is_confirmed = db.Column(db.Boolean, nullable=False, default=False)
     confirmed_on = db.Column(db.DateTime, nullable=True)
-    mirror = db.relationship('Mirror', backref='account', cascade="all, delete")
-
-    def __init__(
-        self, email, name, password, is_admin=False, is_confirmed=False, confirmed_on=None
-    ):
-        self.email = email
-        self.name = name
-        self.password = generate_password_hash(password)
-        self.created_on = datetime.now()
-        self.is_admin = is_admin
-        self.is_confirmed = is_confirmed
-        self.confirmed_on = confirmed_on
-
+    mirror = db.relationship('Mirror', backref='account', cascade="all, delete")       

@@ -6,6 +6,8 @@ from flask_login import login_user, login_required, logout_user
 from src.account.token import generate_token
 from src.utils.email import send_email
 from src.auth.utils import is_safe_url
+from werkzeug.security import generate_password_hash
+from datetime import datetime
 
 auth = Blueprint("auth", __name__)
 
@@ -62,21 +64,30 @@ def signup_post():
         flash('Your password does not match.', "warning")
         return redirect(url_for('auth.signup')) 
     
-    account = Account(email=email, name=name, password=password)
+    account = Account()
+    account.email = email
+    account.name = name
+    account.password = generate_password_hash(password)
+    account.created_on = datetime.now()
+    account.is_admin = False
+    account.is_confirmed = False
+    account.confirmed_on = None
     db.session.add(account)
 
-    db.session.commit()
     token = generate_token(account.email)
     confirm_url = url_for("account.confirm_email", token=token, _external=True)
     html = render_template("confirm_email.html", confirm_url=confirm_url)
     subject = "Please confirm your email"
-    send_email(account.email, subject, html)
 
-    login_user(account)
-
-    flash("A confirmation email has been sent via email.")
-    return redirect(url_for("account.user_account"))
-
+    try:
+        send_email(account.email, subject, html)
+        db.session.commit()
+        login_user(account)
+        flash("A confirmation email has been sent via email.")
+        return redirect(url_for("account.user_account"))
+    except Exception:
+        flash("Enable to send confirmation email.")
+        return redirect(url_for('auth.signup')) 
 
 @auth.route("/logout")
 @login_required
