@@ -14,12 +14,14 @@ def state_check(protocol, address, branch=None):
         file = "state"
     
     start = time.time()
+    target = f"{protocol}://{address}{file}"
+    print(target)
 
     try:
         headers = {
             "User-Agent": "Manjaro Mirror Manager/1.0"
         }
-        response = requests.get(f'{protocol}://{address}/{file}', headers=headers, timeout=3, stream=True)
+        response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
@@ -115,10 +117,13 @@ def validate_branches():
     futures = []
     with concurrent.futures.ThreadPoolExecutor(60) as executor:
         for mirror in mirrors:
-            protocols = ("http", "https")
-            for protocol in protocols:
+            if mirror.https:
                 futures.append(executor.submit(
-                        validate_state(mirror, mirror.address, protocol)
+                        validate_state(mirror, mirror.address, "https")
+                        ))
+            elif mirror.http:
+                futures.append(executor.submit(
+                        validate_state(mirror, mirror.address, "http")
                         ))
                 
             for branch in branches:

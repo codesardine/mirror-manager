@@ -92,7 +92,7 @@ def mirror_post():
             if "http" in url:
                 url = url.split("://")[1]
 
-            return url
+            return url.strip().replace(" ", "")
 
         address = sanitize_url(address)
         if not address:
