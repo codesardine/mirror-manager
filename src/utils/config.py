@@ -13,8 +13,9 @@ settings = {
     "MAIL_DEBUG": False,
     "MAIL_USERNAME": os.environ.get("MAIL_USERNAME"),
     "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD"),
+    "WHITELIST_EMAIL": os.environ.get("WHITELIST_EMAIL"),
     "CHECK_BRANCHES_TIMEOUT_MINUTES": 10,
     "CHECK_OFFLINE_MIRRORS_HOURS": 1,
-    "MASTER_RSYNC": "repo.nix.dk/manjaro/",
+    "MASTER_RSYNC": "mirror.easyname.at/manjaro/",
     "BRANCHES": ("stable", "testing", "unstable")
 }

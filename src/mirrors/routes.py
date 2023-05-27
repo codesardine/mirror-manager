@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from ..mirrors.models import Mirror
-from ..utils.extensions import db
+from src.mirrors.models import Mirror
+from src.utils.extensions import db
 from flask_login import current_user, login_required
 from flask import make_response
 from src.utils.decorators import check_is_confirmed
+from src.utils.email import send_email
+from src.utils.config import settings
 import json
 
 mirror = Blueprint("mirror", __name__)
@@ -46,7 +48,8 @@ def my_mirrors():
 def rsync_mirrors():
     mirrors = Mirror().query.filter_by(rsync=True).all()
     inactive = Mirror().query.filter_by(rsync=True, active=False).all()
-    return render_template('rsync.html', mirrors=mirrors, total=len(mirrors), inactive=len(inactive))
+    master = settings["MASTER_RSYNC"]
+    return render_template('rsync.html', mirrors=mirrors, total=len(mirrors), inactive=len(inactive), master=master)
 
 @mirror.route('/mirrors', methods=['POST'])
 @login_required
@@ -153,8 +156,6 @@ def mirror_post():
             flash(f'Invalid country {country}', "error")
             return redirect(url_for('mirror.my_mirrors'))                          
         
-        flash('Thank you, mirrors are updated', "success")
-
         db.session.add(
             Mirror(
             address=sanitize_url(address),
@@ -169,4 +170,11 @@ def mirror_post():
             )
         )
         db.session.commit()
+        send_email(
+            settings["WHITELIST_EMAIL"],
+            "New mirror to whitelist",
+            f"A new mirror is available {address}, to be whitelisted {ip}, thanks."
+            )
+        
+        flash('Thank you, mirrors are updated', "success")       
         return redirect(url_for('mirror.my_mirrors'))
