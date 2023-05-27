@@ -68,41 +68,33 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
             if not master:
                 mirror.speed = server["access_time"]
                 master_mirror = MasterRepo().query.first()
-
-            def set_status(mirror_hash, master_hash, is_in_sync):
-                if mirror_hash != master_hash:
-                    is_in_sync = False
-                else:
-                    is_in_sync = True
             
             if branch == "stable":
                 mirror.stable_hash = state_file["hash"].strip()
                 mirror.stable_last_sync = state_file["last_sync"]
                 if not master:
-                    set_status(
-                        mirror.stable_hash,
-                        master_mirror.stable_hash,
-                        mirror.stable_is_sync
-                        )            
+                    if mirror.stable_hash != master_mirror.stable_hash:
+                        mirror.stable_is_sync = False
+                    else:
+                        mirror.stable_is_sync = True
 
             elif branch == "testing":
                 mirror.testing_hash = state_file["hash"].strip()
                 mirror.testing_last_sync = state_file["last_sync"]
-                if not master:set_status(
-                        mirror.testing_hash,
-                        master_mirror.testing_hash,
-                        mirror.testing_is_sync
-                        ) 
+                if not master:
+                    if mirror.testing_hash != master_mirror.testing_hash:
+                        mirror.testing_is_sync = False
+                    else:
+                        mirror.testing_is_sync = True
 
             elif branch == "unstable":
                 mirror.unstable_hash = state_file["hash"].strip()
                 mirror.unstable_last_sync = state_file["last_sync"]
                 if not master:
-                    set_status(
-                        mirror.unstable_hash,
-                        master_mirror.unstable_hash,
-                        mirror.unstable_is_sync
-                        ) 
+                    if mirror.unstable_hash != master_mirror.unstable_hash:
+                        mirror.unstable_is_sync = False
+                    else:
+                        mirror.unstable_is_sync = True
     else:
         if not master and not branch:
             if "https" in protocol:
