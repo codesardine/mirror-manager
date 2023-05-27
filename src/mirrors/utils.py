@@ -144,8 +144,9 @@ def validate_branches():
                     "Issues found with your manjaro mirror",
                     f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
                     )
-                mirror.user_notified = True
-                db.session.add(mirror)        
+                mirror.user_notified = True      
+                db.session.add(mirror)    
+
         db.session.commit()
 
 def check_offline_mirrors():

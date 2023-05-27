@@ -20,7 +20,10 @@ def mirrors():
             template = {
             "country": mirror.country,
             "url": mirror.address,
-            "protocols": protocols
+            "protocols": protocols,
+            "stable_in_sync": True if mirror.stable_is_sync else False,
+            "testing_in_sync": True if mirror.testing_is_sync else False,
+            "unstable_in_sync": True if mirror.unstable_is_sync else False
             }
             if mirror.http:
                 protocols.append("http")
