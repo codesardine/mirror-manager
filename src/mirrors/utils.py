@@ -1,9 +1,9 @@
 import requests, time
 from requests.exceptions import HTTPError
-from ..mirrors.models import Mirror, MasterRepo
+from src.mirrors.models import Mirror, MasterRepo
 from datetime import datetime 
-from ..utils.extensions import db
-from ..utils.config import settings
+from src.utils.extensions import db
+from src.utils.config import settings
 import concurrent.futures
 
 
@@ -15,7 +15,6 @@ def state_check(protocol, address, branch=None):
     
     start = time.time()
     target = f"{protocol}://{address}{file}"
-    print(target)
 
     try:
         headers = {
@@ -61,10 +60,13 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
         state_file = get_state_contents(server["state_file"])
         if not branch:
             mirror.last_sync = state_file["last_sync"]
+            if protocol == "http":
+                mirror.http = True
+            elif protocol == "https:":
+                mirror.https = True
         else:
             if not master:
                 mirror.speed = server["access_time"]
-                mirror.http = True
                 master_mirror = MasterRepo().query.first()
 
             def set_status(mirror_hash, master_hash, is_in_sync):
@@ -102,11 +104,14 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
                         mirror.unstable_is_sync
                         ) 
     else:
-        if not master:
+        if not master and not branch:
             if "https" in protocol:
                 mirror.https = False
             else:
                 mirror.http = False
+            
+            if not mirror.http and not mirror.https:
+                mirror.active = False
     
     db.session.add(mirror)      
     db.session.commit()
@@ -138,9 +143,9 @@ def validate_branches():
 
         for mirror in mirrors:
             if not mirror.user_notified and not mirror.http and not mirror.https:
-                from ..utils.email import send_email
-                from ..account.models import Account
-                user = Account().query.filter_by(id=mirror.account_id)
+                from src.utils.email import send_email
+                from src.account.models import Account
+                user = Account.query.get(mirror.account_id)
                 mirror.active = False
                 send_email(
                     user.email,
@@ -173,9 +178,9 @@ def check_offline_mirrors():
                     mirror.http = True
                     
         if mirror.active:
-            from ..utils.email import send_email
-            from ..account.models import Account
-            user = Account().query.filter_by(id=mirror.account_id)
+            from src.utils.email import send_email
+            from src.account.models import Account
+            user = Account.query.get(mirror.account_id)
             send_email(
                 user.email,
                 "Your mirror is back online",
