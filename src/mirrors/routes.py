@@ -76,7 +76,6 @@ def mirror_post():
         
     else:    
         address = request.form.get('mirror')
-        ip_whitelist = request.form.get('ip-whitelist')
         country = request.form.get('country')    
         import pycountry
         from src.mirrors.utils import state_check
@@ -107,12 +106,14 @@ def mirror_post():
         }
         
         speed = 0
+        ip = None
         for protocol in protocols:
             if "http" in protocol:
                 server = state_check(protocol, address)
                 if server["state_file_exists"]:
                     protocols[protocol] = server["state_file_exists"]
                     speed = server["access_time"]
+                    ip = server["ip"]
             else:
                 import subprocess
                 cmd = ["rsync", f"rsync://{address}"]
@@ -159,7 +160,7 @@ def mirror_post():
             http=protocols["http"],
             https=protocols["https"],
             speed = speed,
-            ip_whitelist=ip_whitelist
+            ip_whitelist=ip
             )
         )
         db.session.commit()

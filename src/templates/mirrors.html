@@ -11,9 +11,6 @@
             <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-4">
                 <input name="mirror" type="text" placeholder="Mirror Address" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
                 <input name="country" type="text" placeholder="Country" class="input bg-white text-neutral focus:bg-primary-content w-full" autofocus=""/>
-                <div class="grid grid-cols-1 gap-2">
-                    <input name="ip-whitelist" type="text" placeholder="Rsync ip's whitelist space separated" class="input bg-white text-neutral focus:bg-primary-content w-full" style="word-spacing: 10px;" autofocus=""/>
-                </div>
                 <div class="modal-action">
                     <label for="add-modal" class="btn btn-accent btn-sm shadow">Cancel</label>
                     <button class="btn btn-success btn-sm shadow">Add</button>
@@ -31,7 +28,7 @@
             <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-2 mt-2">
               <div class="flex items-center gap-1">
                 <span class="label-text w-full">{{ mirror.address }}</span> 
-                  <span class="w-full">
+                  <span class="w-full flex gap-1">
                     {% if mirror.http %}
                       <a target="blank" href="http://{{ mirror.address }}" class="underline">http</a>
                     {% endif %}
@@ -41,6 +38,7 @@
                     {% if mirror.rsync %}
                     <a  target="blank" href="rsync://{{ mirror.address }}" class="underline">rsync</a>
                     {% endif %}
+                    <span class="pt-[2px]">{{ mirror.ip_whitelist }}</span>
                   </span>
                   <label class="cursor-pointer label" onclick="disableMirror(this)">
                       <input name="active" type="checkbox" class="toggle toggle-success" {% if mirror.active %}checked{% endif %} />

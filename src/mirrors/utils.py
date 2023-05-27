@@ -19,10 +19,11 @@ def state_check(protocol, address, branch=None):
         headers = {
             "User-Agent": "Manjaro Mirror Manager/1.0"
         }
-        response = requests.get(f'{protocol}://{address}/{file}', headers=headers, timeout=3)
+        response = requests.get(f'{protocol}://{address}/{file}', headers=headers, timeout=3, stream=True)
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
+        ip = response.raw._connection.sock.getpeername()
     except HTTPError:
         return {"state_file_exists": False}
     except Exception: 
@@ -31,7 +32,8 @@ def state_check(protocol, address, branch=None):
     return {
         "state_file_exists": True,
         "access_time": str(elapsed)[:5],
-        "state_file": response.text
+        "state_file": response.text,
+        "ip": ip[0]
         }
     
 def get_state_contents(file):
