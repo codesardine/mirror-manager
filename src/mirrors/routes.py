@@ -21,16 +21,32 @@ def mirrors():
             "country": mirror.country,
             "url": mirror.address,
             "protocols": protocols,
-            "stable_in_sync": True if mirror.stable_is_sync else False,
-            "testing_in_sync": True if mirror.testing_is_sync else False,
-            "unstable_in_sync": True if mirror.unstable_is_sync else False
+            "branches": [],
+            "speed": mirror.speed            
             }
+
+            if not mirror.stable_is_sync or not mirror.stable_hash:
+                template["branches"].append(0)
+            else:
+                template["branches"].append(1)
+            
+            if not mirror.testing_is_sync or not mirror.testing_hash:
+                template["branches"].append(0)
+            else:
+                template["branches"].append(1)
+
+            if not mirror.unstable_is_sync or not mirror.unstable_hash:
+                template["branches"].append(0)
+            else:
+                template["branches"].append(1)
+
             if mirror.http:
                 protocols.append("http")
             if mirror.https:
                 protocols.append("https")
-
-            mirrors.append(template)
+            
+            if 1 in template["branches"]:
+                mirrors.append(template)
 
     response = make_response(
         json.dumps(mirrors)
