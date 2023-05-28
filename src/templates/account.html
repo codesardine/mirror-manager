@@ -24,11 +24,11 @@
                 <label for="delete-account" class="btn btn-error btn-sm shadow" onclick="deleteAccount(this)">Delete</label>
                 <input name="delete-account" class="hidden" id="delete-account" type="checkbox"/>
                 <input name="account_id" type="text" class="hidden" value="{{ account.id }}"/>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               </div>
             </div>
           </div>
         </div>
-
       </form>
       <div class="text-right mt-4 mb-2">
         {% if not account.is_confirmed %}

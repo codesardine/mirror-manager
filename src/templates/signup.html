@@ -10,6 +10,7 @@
                 <input name=name type="text" placeholder="Your Name" class="input input-bordered input-success w-full" />
                 <input name=password type="password" placeholder="Your Password" class="input input-bordered input-success w-full" />
                 <input name=password_confirm type="password" placeholder="Confirm Password" class="input input-bordered input-success w-full" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-s btn-success mb-2">Sign Up</button>
         </form>
     </div>

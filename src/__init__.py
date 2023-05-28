@@ -8,6 +8,7 @@ from .account.models import Account
 from apscheduler.triggers.interval import IntervalTrigger
 from .utils.decorators import scheduler
 from .mirrors.utils import validate_branches, check_offline_mirrors, populate_master_state
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 app.config.update(settings)  
@@ -20,6 +21,9 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
+
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 from .auth.routes import auth as auth_blueprint
 app.register_blueprint(auth_blueprint)

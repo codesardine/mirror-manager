@@ -8,6 +8,7 @@
             <form method="POST" action="/login" class="grid grid-cols-1 gap-4">
                 <input name="email" type="email" placeholder="Your Email" class="input input-bordered input-success w-full" autofocus=""/>
                 <input name="password" type="password" placeholder="Your Password" class="input input-bordered input-success w-full" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-control">
                     <label class="label cursor-pointer">
                       <span class="label-text">Remember me</span> 
