@@ -28,7 +28,8 @@
             <form method="POST" action="/mirrors" class="grid grid-cols-1 gap-2 mt-2">
               <div class="flex items-center gap-1">
                 <span class="label-text w-full">{{ mirror.address }}</span> 
-                  <span class="w-full flex gap-1">
+                  <span class="w-full flex gap-3">
+                    <span class="pt-[2px]">{{ mirror.speed }}ms</span>
                     {% if mirror.http %}
                       <a target="blank" href="http://{{ mirror.address }}" class="underline">http</a>
                     {% endif %}
