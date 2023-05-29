@@ -6,10 +6,8 @@ main = Blueprint("main", __name__)
 @main.route("/")
 def index():
     mirrors = Mirror().query.filter_by(active=True).all()
-    inactive = Mirror().query.filter_by(active=False).all()
     return render_template(
         'index.html',
         mirrors=mirrors,
-        total=len(mirrors),
-        inactive=len(inactive)
+        total=len(mirrors)
         )
