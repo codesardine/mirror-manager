@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="w-full max-w-screen-sm mx-auto -mt-24 self-center">
+  <div class="card bg-base-100 shadow-xl py-2 px-4 grid grid-cols-1 gap-2">
+      <p class="font-bold">This mirror already exists, if you would like to claim it, create a file named "{{ mirror.address }}{{ file_name }}" in your server and validate it.</p>
+  
+  <form method="POST" action="/mirrors">
+    <label for="validate-mirror" class="w-fit mx-auto btn btn-success btn-sm shadow float-right"  onclick="this.parentElement.submit()">Validate</label>
+    <input type="hidden" name="validate-mirror" value="{{ file_name }}"/>
+    <input type="hidden" name="mirror-id" value="{{ mirror.id }}"/>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  </form>
+  </div>
+</div>
+{% endblock %}

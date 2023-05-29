@@ -7,6 +7,22 @@ from src.utils.config import settings
 import concurrent.futures
 
 
+def validate_ownership(protocol, address, file):        
+    target = f"{protocol}://{address}{file}"
+
+    try:
+        headers = {
+            "User-Agent": "Manjaro Mirror Manager/1.0"
+        }
+        response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
+        response.raise_for_status()
+    except HTTPError:
+        return False
+    except Exception: 
+        return False
+    
+    return True
+
 def state_check(protocol, address, branch=None):    
     if branch:
         file = f"{branch}/state"
