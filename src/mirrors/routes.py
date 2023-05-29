@@ -82,7 +82,6 @@ def mirror_post():
     mirror_validation_token = request.form.get('validate-mirror')
     if mirror_validation_token:
         from src.mirrors.utils import validate_ownership
-        from flask_login import current_user
         mirror = Mirror.query.get(mirror_id)
         if mirror.https:
             protocol = "https"
@@ -214,6 +213,7 @@ def mirror_post():
                 ip_whitelist=ip
                 )
             )
+            
             db.session.commit()
             send_email(
                 settings["WHITELIST_EMAIL"],
