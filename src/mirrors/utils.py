@@ -186,9 +186,6 @@ def check_offline_mirrors():
 def check_unsync_mirrors():
     mirrors = Mirror().query.filter_by(active=True).all()
     for mirror in mirrors:
-        
-        mirror.user_notified = False
-        mirror.active = True
         branches = (mirror.stable_is_sync, mirror.testing_is_sync, mirror.unstable_is_sync)
 
         today = date.today()
