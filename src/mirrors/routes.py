@@ -65,8 +65,13 @@ def my_mirrors():
 @login_required
 @check_is_confirmed
 def rsync_mirrors():
-    mirrors = Mirror().query.filter_by(rsync=True).all()
+    query = Mirror().query.filter_by(rsync=True).all()
+    mirrors = []
     master = settings["MASTER_RSYNC"]
+    for mirror in query:
+        if mirror.address != master:
+            mirrors.append(mirror)
+    
     return render_template('rsync.html', mirrors=mirrors, total=len(mirrors), master=master)
 
 @mirror.route('/mirrors', methods=['POST'])
