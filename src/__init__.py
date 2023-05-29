@@ -7,7 +7,7 @@ from .utils.extensions import db
 from .account.models import Account
 from apscheduler.triggers.interval import IntervalTrigger
 from .utils.decorators import scheduler
-from .mirrors.utils import check_unsync_mirrors, validate_branches, check_offline_mirrors, populate_master_state
+from .mirrors.utils import remove_unused_accounts, check_unsync_mirrors, validate_branches, check_offline_mirrors, populate_master_state
 from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
@@ -53,6 +53,7 @@ def check_branches():
 def check_down_state():
     with app.app_context():
         check_offline_mirrors()
+        remove_unused_accounts()
 
 @scheduler.scheduled_job(IntervalTrigger(
         hours=settings["CHECK_UNSYNC_MIRRORS_HOURS"]))

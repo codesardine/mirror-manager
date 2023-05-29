@@ -237,3 +237,21 @@ def populate_master_state():
     for branch in branches:
        validate_state(master_mirror, repo, protocol, branch=branch, master=True)    
     
+def remove_unused_accounts():
+    from src.utils.email import send_email
+    from src.account.models import Account
+    accounts = Account.query.all()
+    for account in accounts:
+        mirrors = Mirror().query.filter_by(account_id=account.id).first()
+        today = date.today()
+        created_on = account.created_on.date()
+        defined_days = today - timedelta(days=1)
+
+        if mirrors == None and created_on < defined_days:
+            db.session.delete(account)
+            db.session.commit()
+            send_email(
+                account.email,
+                "Your account has been deleted",
+                f"Your Manjaro mirror manager account, was unused and has been deleted."
+                )
