@@ -14,8 +14,9 @@ settings = {
     "MAIL_USERNAME": os.environ.get("MAIL_USERNAME"),
     "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD"),
     "WHITELIST_EMAIL": os.environ.get("WHITELIST_EMAIL"),
-    "CHECK_BRANCHES_TIMEOUT_MINUTES": 10,
-    "CHECK_OFFLINE_MIRRORS_HOURS": 1,
+    "CHECK_BRANCHES_TIMEOUT_MINUTES": 30,
+    "CHECK_OFFLINE_MIRRORS_HOURS": 48,
+    "CHECK_UNSYNC_MIRRORS_HOURS": 24,
     "MASTER_RSYNC": "mirror.easyname.at/manjaro/",
     "BRANCHES": ("stable", "testing", "unstable")
 }

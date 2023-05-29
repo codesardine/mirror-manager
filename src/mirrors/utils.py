@@ -1,7 +1,7 @@
 import requests, time
 from requests.exceptions import HTTPError
 from src.mirrors.models import Mirror, MasterRepo
-from datetime import datetime 
+from datetime import datetime, date, timedelta
 from src.utils.extensions import db
 from src.utils.config import settings
 import concurrent.futures
@@ -182,6 +182,29 @@ def check_offline_mirrors():
             db.session.add(mirror)        
     
     db.session.commit()
+
+def check_unsync_mirrors():
+    mirrors = Mirror().query.filter_by(active=True).all()
+    for mirror in mirrors:
+        
+        mirror.user_notified = False
+        mirror.active = True
+        branches = (mirror.stable_is_sync, mirror.testing_is_sync, mirror.unstable_is_sync)
+
+        today = date.today()
+        m_date = mirror.last_sync.split(" ")[0]
+        last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
+        defined_days = today - timedelta(days=1)
+                    
+        if not any(branches) and last_sync < defined_days:
+            from src.utils.email import send_email
+            from src.account.models import Account
+            user = Account.query.get(mirror.account_id)
+            send_email(
+                user.email,
+                "Your mirror is out of sync",
+                f"Your Manjaro mirror {mirror.address}, is outdated for 24h, there might be an issue with your sync process."
+                )
 
 def populate_master_state():
     branches = settings["BRANCHES"]
