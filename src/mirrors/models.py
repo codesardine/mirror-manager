@@ -15,6 +15,15 @@ class MasterRepo(db.Model):
     unstable_hash = db.Column(db.String(100), nullable=True)
     unstable_last_sync = db.Column(db.String(100), nullable=True)
 
+    arm_stable_hash = db.Column(db.String(100), nullable=True)
+    arm_stable_last_sync = db.Column(db.String(100), nullable=True)
+
+    arm_testing_hash = db.Column(db.String(100), nullable=True)
+    arm_testing_last_sync = db.Column(db.String(100), nullable=True)
+
+    arm_unstable_hash = db.Column(db.String(100), nullable=True)
+    arm_unstable_last_sync = db.Column(db.String(100), nullable=True)
+
 
 class Mirror(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
@@ -42,5 +51,17 @@ class Mirror(db.Model):
     unstable_hash = db.Column(db.String(100))
     unstable_last_sync = db.Column(db.String(100))
     unstable_is_sync = db.Column(db.Boolean)
+
+    arm_stable_hash = db.Column(db.String(100))
+    arm_stable_last_sync = db.Column(db.String(100))
+    arm_stable_is_sync = db.Column(db.Boolean)
+
+    arm_testing_hash = db.Column(db.String(100))
+    arm_testing_last_sync = db.Column(db.String(100))
+    arm_testing_is_sync = db.Column(db.Boolean)
+
+    arm_unstable_hash = db.Column(db.String(100))
+    arm_unstable_last_sync = db.Column(db.String(100))
+    arm_unstable_is_sync = db.Column(db.Boolean)
 
 

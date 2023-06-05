@@ -111,6 +111,33 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
                         mirror.unstable_is_sync = False
                     else:
                         mirror.unstable_is_sync = True
+
+            elif branch == "arm-stable":
+                mirror.arm_stable_hash = state_file["hash"].strip()
+                mirror.arm_stable_last_sync = state_file["last_sync"]
+                if not master:
+                    if mirror.arm_stable_hash != master_mirror.arm_stable_hash:
+                        mirror.arm_stable_is_sync = False
+                    else:
+                        mirror.arm_stable_is_sync = True
+
+            elif branch == "arm-testing":
+                mirror.arm_testing_hash = state_file["hash"].strip()
+                mirror.arm_testing_last_sync = state_file["last_sync"]
+                if not master:
+                    if mirror.arm_testing_hash != master_mirror.arm_testing_hash:
+                        mirror.arm_testing_is_sync = False
+                    else:
+                        mirror.arm_testing_is_sync = True
+
+            elif branch == "arm-unstable":
+                mirror.arm_unstable_hash = state_file["hash"].strip()
+                mirror.arm_unstable_last_sync = state_file["last_sync"]
+                if not master:
+                    if mirror.arm_unstable_hash != master_mirror.arm_unstable_hash:
+                        mirror.arm_unstable_is_sync = False
+                    else:
+                        mirror.arm_unstable_is_sync = True
     else:
         if not master and not branch:
             if "https" in protocol:
@@ -202,7 +229,14 @@ def check_offline_mirrors():
 def check_unsync_mirrors():
     mirrors = Mirror().query.filter_by(active=True).all()
     for mirror in mirrors:
-        branches = (mirror.stable_is_sync, mirror.testing_is_sync, mirror.unstable_is_sync)
+        branches = (
+            mirror.stable_is_sync, 
+            mirror.testing_is_sync, 
+            mirror.unstable_is_sync,
+            mirror.arm_stable_is_sync,
+            mirror.arm_testing_is_sync,
+            mirror.arm_unstable_is_sync
+            )
 
         today = date.today()
         m_date = mirror.last_sync.split(" ")[0]
