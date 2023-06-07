@@ -11,7 +11,7 @@ import json
 mirror = Blueprint("mirror", __name__)
 
 @mirror.route("/arch64-status.json")
-def mirrors():
+def arch64_status():
     query = Mirror().query.filter_by(active=True).all()
     mirrors = []
     for mirror in query:
@@ -56,7 +56,7 @@ def mirrors():
     return response
 
 @mirror.route("/status.json")
-def mirrors():
+def status():
     query = Mirror().query.filter_by(active=True).all()
     mirrors = []
     for mirror in query:
