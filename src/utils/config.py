@@ -18,5 +18,5 @@ settings = {
     "CHECK_OFFLINE_MIRRORS_HOURS": 48,
     "CHECK_UNSYNC_MIRRORS_HOURS": 24,
     "MASTER_RSYNC": "mirror.easyname.at/manjaro/",
-    "BRANCHES": ("stable", "testing", "unstable")
+    "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable")
 }
