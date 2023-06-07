@@ -85,21 +85,6 @@ def status():
             else:
                 template["branches"].append(1)
 
-            if not mirror.arm_stable_is_sync or not mirror.arm_stable_hash:
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
-            
-            if not mirror.arm_testing_is_sync or not mirror.arm_testing_hash:
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
-
-            if not mirror.arm_unstable_is_sync or not mirror.arm_unstable_hash:
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
-
             if mirror.http:
                 protocols.append("http")
             if mirror.https:
