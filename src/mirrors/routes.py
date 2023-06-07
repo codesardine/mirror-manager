@@ -10,7 +10,52 @@ import json
 
 mirror = Blueprint("mirror", __name__)
 
-@mirror.route("/mirrors.json")
+@mirror.route("/arch64-status.json")
+def mirrors():
+    query = Mirror().query.filter_by(active=True).all()
+    mirrors = []
+    for mirror in query:
+        if mirror.last_sync is not None:
+            protocols = []
+            template = {
+            "country": mirror.country,
+            "url": mirror.address,
+            "protocols": protocols,
+            "branches": [],
+            "speed": mirror.speed            
+            }
+
+            if not mirror.arm_stable_is_sync or not mirror.arm_stable_hash:
+                template["branches"].append(0)
+            else:
+                template["branches"].append(1)
+            
+            if not mirror.arm_testing_is_sync or not mirror.arm_testing_hash:
+                template["branches"].append(0)
+            else:
+                template["branches"].append(1)
+
+            if not mirror.arm_unstable_is_sync or not mirror.arm_unstable_hash:
+                template["branches"].append(0)
+            else:
+                template["branches"].append(1)
+
+            if mirror.http:
+                protocols.append("http")
+            if mirror.https:
+                protocols.append("https")
+            
+            if 1 in template["branches"]:
+                mirrors.append(template)
+
+    response = make_response(
+        json.dumps(mirrors)
+        )
+    response.headers["Content-Type"] = "application/json"
+    response.status_code = 200
+    return response
+
+@mirror.route("/status.json")
 def mirrors():
     query = Mirror().query.filter_by(active=True).all()
     mirrors = []
