@@ -30,7 +30,7 @@ def validate_ownership(protocol, address, file):
 
     try:
         headers = {
-            "User-Agent": "Manjaro Mirror Manager/1.0"
+            "User-Agent": settings["USER_AGENT"]
         }
         response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
         response.raise_for_status()
@@ -52,7 +52,7 @@ def state_check(protocol, address, branch=None):
 
     try:
         headers = {
-            "User-Agent": "ManjaroMirrorBot/1.1"
+            "User-Agent": settings["USER_AGENT"]
         }
         response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
         response.raise_for_status()

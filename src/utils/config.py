@@ -19,5 +19,6 @@ settings = {
     "CHECK_UNSYNC_MIRRORS_HOURS": 24,
     "WEEKLY_EMAILS": 1,
     "MASTER_RSYNC": "mirror.easyname.at/manjaro/",
-    "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable")
+    "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable"),
+    "USER_AGENT": "ManjaroMirrorBot/1.1"
 }
