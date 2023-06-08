@@ -7,6 +7,23 @@ from src.utils.config import settings
 import concurrent.futures
 import socket
 
+def whitelist_email():
+    from src.utils.email import send_email
+    query = Mirror().query.filter_by(active=True).all()  
+    mirror_list = []  
+    for mirror in query:
+        mirror_list.append(mirror.ip_whitelist)
+
+    mirrors = '<br />'.join(mirror_list)
+    
+    send_email(
+        settings["WHITELIST_EMAIL"],
+        "Mirrors to whitelist",
+        f"""A new weekly IP list is available.
+        <br />
+        <br />
+        {mirrors}"""
+        )
 
 def validate_ownership(protocol, address, file):        
     target = f"{protocol}://{address}{file}"

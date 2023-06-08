@@ -4,7 +4,6 @@ from src.utils.extensions import db
 from flask_login import current_user, login_required
 from flask import make_response
 from src.utils.decorators import check_is_confirmed
-from src.utils.email import send_email
 from src.utils.config import settings
 import json
 
@@ -259,12 +258,6 @@ def mirror_post():
                 )
             )
             
-            db.session.commit()
-            send_email(
-                settings["WHITELIST_EMAIL"],
-                "New mirror to whitelist",
-                f"A new mirror is available {address}, to be whitelisted {ip}, thanks."
-                )
-            
+            db.session.commit()           
             flash('Thank you, mirrors are updated', "success")       
             return redirect(url_for('mirror.my_mirrors'))
