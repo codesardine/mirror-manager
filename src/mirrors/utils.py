@@ -5,6 +5,7 @@ from datetime import datetime, date, timedelta
 from src.utils.extensions import db
 from src.utils.config import settings
 import concurrent.futures
+import socket
 
 
 def validate_ownership(protocol, address, file):        
@@ -40,7 +41,14 @@ def state_check(protocol, address, branch=None):
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
-        ip = response.raw._connection.sock.getpeername()
+        res = response.raw._connection.sock.getpeername()
+        ip = res[0]
+        #port = res[1]
+        try:
+            ipv6 = socket.getaddrinfo(address, None, family=socket.AF_INET6)
+            ip += f" {ipv6[0][4][0]}"
+        except Exception as e:
+            print(e)
     except HTTPError:
         return {"state_file_exists": False}
     except Exception: 
@@ -50,7 +58,7 @@ def state_check(protocol, address, branch=None):
         "state_file_exists": True,
         "access_time": str(elapsed)[:5],
         "state_file": response.text,
-        "ip": ip[0]
+        "ip": ip
         }
     
 def get_state_contents(file):
