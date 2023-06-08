@@ -35,7 +35,7 @@ def state_check(protocol, address, branch=None):
 
     try:
         headers = {
-            "User-Agent": "Manjaro Mirror Manager/1.0"
+            "User-Agent": "ManjaroMirrorBot/1.1"
         }
         response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
         response.raise_for_status()
