@@ -18,7 +18,7 @@ settings = {
     "CHECK_OFFLINE_MIRRORS_HOURS": 48,
     "CHECK_UNSYNC_MIRRORS_HOURS": 24,
     "WEEKLY_EMAILS": 1,
-    "MASTER_RSYNC": "mirrors.manjaro.org/repo/",
+    "MASTER_RSYNC": "repo.manjaro.org/repo/",
     "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable"),
     "USER_AGENT": "ManjaroMirrorBot/1.1"
 }
