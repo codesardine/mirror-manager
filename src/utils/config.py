@@ -14,11 +14,11 @@ settings = {
     "MAIL_USERNAME": os.environ.get("MAIL_USERNAME"),
     "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD"),
     "WHITELIST_EMAIL": os.environ.get("WHITELIST_EMAIL"),
-    "CHECK_BRANCHES_TIMEOUT_MINUTES": 30,
+    "CHECK_BRANCHES_TIMEOUT_MINUTES": 1,
     "CHECK_OFFLINE_MIRRORS_HOURS": 48,
     "CHECK_UNSYNC_MIRRORS_HOURS": 24,
     "WEEKLY_EMAILS": 1,
-    "MASTER_RSYNC": "mirror.easyname.at/manjaro/",
+    "MASTER_RSYNC": "mirrors.manjaro.org/repo/",
     "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable"),
     "USER_AGENT": "ManjaroMirrorBot/1.1"
 }
