@@ -27,7 +27,11 @@
       {% if mirror.active %}
       <tr>
         <td>{{ mirror.address }}</td>
+        {% if mirror.country == "global cdn" %}
+        <td>Global CDN</td>
+        {% else %}
         <td class="capitalize">{{ mirror.country }}</td>
+        {% endif %}
         <td>
           {% if mirror.http %}
           <a  target="blank" href="http://{{ mirror.address }}" class="underline">http</a>

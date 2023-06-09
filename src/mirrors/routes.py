@@ -171,8 +171,7 @@ def mirror_post():
             
         else:    
             address = request.form.get('mirror')
-            country = request.form.get('country')    
-            import pycountry
+            country = request.form.get('country').lower()    
             from src.mirrors.utils import state_check
 
             def sanitize_url(url):
@@ -226,23 +225,25 @@ def mirror_post():
             else:
                 flash('Something is wrong, or server does not exist', "error")
                 return redirect(url_for('mirror.my_mirrors'))
+            
+            if country != "global cdn":
+                import pycountry
+                try:
+                    is_country = pycountry.countries.get(name=country)
+                    if not is_country:
+                        fuzzy_search = pycountry.countries.search_fuzzy(country)
+                        new_country = fuzzy_search[0].name
 
-            try:
-                is_country = pycountry.countries.get(name=country)
-                if not is_country:
-                    fuzzy_search = pycountry.countries.search_fuzzy(country)
-                    new_country = fuzzy_search[0].name
-
-                    if new_country and "," in new_country:
-                        country = new_country.split(",")[0]
-                    elif new_country and "," not in new_country:
-                        country = new_country
-                    else:
-                        flash(f'Invalid country {country}', "error")
-                        return redirect(url_for('mirror.my_mirrors'))
-            except:
-                flash(f'Invalid country {country}', "error")
-                return redirect(url_for('mirror.my_mirrors'))                          
+                        if new_country and "," in new_country:
+                            country = new_country.split(",")[0]
+                        elif new_country and "," not in new_country:
+                            country = new_country
+                        else:
+                            flash(f'Invalid country {country}', "error")
+                            return redirect(url_for('mirror.my_mirrors'))
+                except:
+                    flash(f'Invalid country {country}', "error")
+                    return redirect(url_for('mirror.my_mirrors'))                          
             
             db.session.add(
                 Mirror(
