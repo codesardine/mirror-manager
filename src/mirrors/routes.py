@@ -226,7 +226,8 @@ def mirror_post():
                 flash('Something is wrong, or server does not exist', "error")
                 return redirect(url_for('mirror.my_mirrors'))
             
-            if country != "global cdn":
+            if "global" in country:
+                country = "global"
                 import pycountry
                 try:
                     is_country = pycountry.countries.get(name=country)
