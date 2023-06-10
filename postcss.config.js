@@ -5,8 +5,10 @@ module.exports = {
       tailwindcss: {},
       autoprefixer: {},
       'cssnano': {
-        preset: 'default',
-      },
+        "preset": [
+            "default", {"discardComments": {"removeAll": true}}
+        ],
+      }
   }
 }
 
