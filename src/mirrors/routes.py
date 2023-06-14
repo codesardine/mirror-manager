@@ -227,7 +227,6 @@ def mirror_post():
                 return redirect(url_for('mirror.my_mirrors'))
             
             if not "global" in country:
-                country = "global"
                 import pycountry
                 try:
                     is_country = pycountry.countries.get(name=country)
@@ -244,7 +243,9 @@ def mirror_post():
                             return redirect(url_for('mirror.my_mirrors'))
                 except:
                     flash(f'Invalid country {country}', "error")
-                    return redirect(url_for('mirror.my_mirrors'))                          
+                    return redirect(url_for('mirror.my_mirrors'))   
+            else:
+                country = "global"                       
             
             db.session.add(
                 Mirror(
