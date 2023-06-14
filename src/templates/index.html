@@ -1,18 +1,30 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="overflow-x-auto self-start mt-8 bg-base-100 rounded-2xl w-full max-w-screen-lg mx-auto">
-  <div class="text-xs py-2 px-4 font-semibold capitalize text-gray-800 flex gap-2">
+{% extends "base.html" %} {% block content %}
+<div
+  class="overflow-x-auto self-start mt-8 bg-base-100 rounded-2xl w-full max-w-screen-lg mx-auto">
+  <div
+    class="text-xs py-2 px-4 font-semibold capitalize text-gray-800 flex gap-2">
     <div class="stats shadow">
       <div class="stat p-0">
         <div class="stat-figure text-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="inline-block w-8 h-8 stroke-current">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+          </svg>
         </div>
         <div class="stat-value text-primary mb-1">{{ total }} MR</div>
       </div>
     </div>
   </div>
-  <h1 class="w-full text-center py-4 text-xl font-semibold mb-4">Public Mirrors</h1>
+  <h1 class="w-full text-center py-4 text-xl font-semibold mb-4">
+    Public Mirrors
+  </h1>
   <table class="table table-zebra w-full text-center">
     <thead>
       <tr>
@@ -23,8 +35,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for mirror in mirrors %}
-      {% if mirror.active %}
+      {% for mirror in mirrors %} {% if mirror.active %}
       <tr>
         <td>{{ mirror.address }}</td>
         {% if "global" in mirror.country %}
@@ -34,47 +45,58 @@
         {% endif %}
         <td>
           {% if mirror.http %}
-          <a  target="blank" href="http://{{ mirror.address }}" class="underline">http</a>
-          {% endif %}
-          {% if mirror.https %}
-          <a  target="blank" href="https://{{ mirror.address }}" class="underline">https</a>
+          <a
+            target="blank"
+            href="http://{{ mirror.address }}"
+            class="underline"
+            >http</a
+          >
+          {% endif %} {% if mirror.https %}
+          <a
+            target="blank"
+            href="https://{{ mirror.address }}"
+            class="underline"
+            >https</a
+          >
           {% endif %}
         </td>
         <td class="flex gap-1 uppercase font-bold justify-center">
-          {% if mirror.last_sync %}
-          {{ mirror.last_sync }}
-          {% else %}
+          {% if mirror.last_sync %} {{ mirror.last_sync }} {% else %}
           <span class="capitalize font-normal">in queue</span>
-          {% endif %}
-          {% if not mirror.stable_is_sync or not mirror.testing_is_sync or not mirror.testing_is_sync %}
-          <svg class="text-orange-300 inline"  xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="m40-120 440-760 440 760H40Zm104-60h672L480-760 144-180Zm340.175-57q12.825 0 21.325-8.675 8.5-8.676 8.5-21.5 0-12.825-8.675-21.325-8.676-8.5-21.5-8.5-12.825 0-21.325 8.675-8.5 8.676-8.5 21.5 0 12.825 8.675 21.325 8.676 8.5 21.5 8.5ZM454-348h60v-224h-60v224Zm26-122Z"/></svg>
-          {% endif %}
-          {% if not mirror.stable_hash %}
+          {% endif %} {% if not mirror.stable_is_sync or not
+          mirror.testing_is_sync or not mirror.testing_is_sync %}
+          <svg
+            class="text-orange-300 inline"
+            xmlns="http://www.w3.org/2000/svg"
+            height="22"
+            viewBox="0 -960 960 960"
+            width="22">
+            <path
+              fill="currentColor"
+              d="m40-120 440-760 440 760H40Zm104-60h672L480-760 144-180Zm340.175-57q12.825 0 21.325-8.675 8.5-8.676 8.5-21.5 0-12.825-8.675-21.325-8.676-8.5-21.5-8.5-12.825 0-21.325 8.675-8.5 8.676-8.5 21.5 0 12.825 8.675 21.325 8.676 8.5 21.5 8.5ZM454-348h60v-224h-60v224Zm26-122Z" />
+          </svg>
+          {% endif %} {% if not mirror.stable_hash and not mirror.testing_hash
+          and not mirror.unstable_hash %}
+          <span class="px-2 bg-red-800 rounded-full shadow">X64</span>
+          {% else %} {% if not mirror.stable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">s</span>
-          {% endif %}
-          {% if not mirror.testing_hash %}
+          {% endif %} {% if not mirror.testing_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">t</span>
-          {% endif %}
-          {% if not mirror.unstable_hash %}
+          {% endif %} {% if not mirror.unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">u</span>
-          {% endif %}
-          {% if not mirror.arm_stable_hash and not mirror.arm_testing_hash and not mirror.arm_unstable_hash %}
+          {% endif %} {% endif %} {% if not mirror.arm_stable_hash and not
+          mirror.arm_testing_hash and not mirror.arm_unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">arm</span>
-          {% else %}
-            {% if not mirror.arm_stable_hash %}
-            <span class="px-2 bg-red-800 rounded-full shadow">as</span>
-            {% endif %}
-            {% if not mirror.arm_testing_hash %}
-            <span class="px-2 bg-red-800 rounded-full shadow">at</span>
-            {% endif %}
-            {% if not mirror.arm_unstable_hash %}
-            <span class="px-2 bg-red-800 rounded-full shadow">au</span>
-            {% endif %}
-          {% endif %}
+          {% else %} {% if not mirror.arm_stable_hash %}
+          <span class="px-2 bg-red-800 rounded-full shadow">as</span>
+          {% endif %} {% if not mirror.arm_testing_hash %}
+          <span class="px-2 bg-red-800 rounded-full shadow">at</span>
+          {% endif %} {% if not mirror.arm_unstable_hash %}
+          <span class="px-2 bg-red-800 rounded-full shadow">au</span>
+          {% endif %} {% endif %}
         </td>
       </tr>
-      {% endif %}
-      {% endfor %}
+      {% endif %} {% endfor %}
     </tbody>
   </table>
 </div>
