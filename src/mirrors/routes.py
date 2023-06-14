@@ -11,7 +11,7 @@ mirror = Blueprint("mirror", __name__)
 
 @mirror.route("/arch64-status.json")
 def arch64_status():
-    query = Mirror().query.filter_by(active=True).all()
+    query = Mirror().query.filter_by(active=True, in_sync=True).all()
     mirrors = []
     for mirror in query:
         if mirror.last_sync is not None:
@@ -56,7 +56,7 @@ def arch64_status():
 
 @mirror.route("/status.json")
 def status():
-    query = Mirror().query.filter_by(active=True).all()
+    query = Mirror().query.filter_by(active=True, in_sync=True).all()
     mirrors = []
     for mirror in query:
         if mirror.last_sync is not None:

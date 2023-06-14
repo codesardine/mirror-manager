@@ -34,6 +34,7 @@ class Mirror(db.Model):
     http = db.Column(db.Boolean)
     https = db.Column(db.Boolean)
     speed = db.Column(db.String(10))
+    in_sync = db.Column(db.Boolean, default=True)
 
     last_sync = db.Column(db.String(100))
     active = db.Column(db.Boolean)

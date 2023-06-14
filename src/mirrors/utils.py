@@ -178,7 +178,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
 
 def validate_branches():
     branches = settings["BRANCHES"]
-    mirrors = Mirror().query.filter_by(active=True).all()
+    mirrors = Mirror().query.filter_by(active=True, in_sync=True).all()
     futures = []
     with concurrent.futures.ThreadPoolExecutor(60) as executor:
         for mirror in mirrors:
@@ -218,7 +218,7 @@ def validate_branches():
         db.session.commit()
 
 def check_offline_mirrors():
-    mirrors = Mirror().query.filter_by(active=False).all()
+    mirrors = Mirror().query.filter_by(active=False, in_sync=True).all()
     for mirror in mirrors:
         protocols = {
             "http": False,
@@ -272,11 +272,17 @@ def check_unsync_mirrors():
             from src.utils.email import send_email
             from src.account.models import Account
             user = Account.query.get(mirror.account_id)
+            mirror.in_sync = False
             send_email(
                 user.email,
                 "Your mirror is out of sync",
                 f"Your Manjaro mirror {mirror.address}, is outdated for 24h, there might be an issue with your sync process."
                 )
+        else:
+            mirror.in_sync = True
+
+        db.session.add(mirror)  
+        db.session.commit() 
 
 def populate_master_state():
     branches = settings["BRANCHES"]
