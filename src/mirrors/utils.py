@@ -266,9 +266,19 @@ def check_unsync_mirrors():
         today = date.today()
         m_date = mirror.last_sync.split(" ")[0]
         last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
-        defined_days = today - timedelta(days=1)
-                    
-        if not any(branches) and last_sync < defined_days:
+        one_day = today - timedelta(days=1)
+        seven_days = today - timedelta(days=7)
+
+        if not any(branches) and last_sync < seven_days:
+            db.session.delete(mirror)
+            db.session.commit()
+            send_email(
+                user.email,
+                "Mirror out of sync for a week",
+                f"Your Manjaro mirror {mirror.address}, is outdated for a week and is now deleted."
+                )
+               
+        elif not any(branches) and last_sync < one_day:
             from src.utils.email import send_email
             from src.account.models import Account
             user = Account.query.get(mirror.account_id)
