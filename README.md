@@ -5,7 +5,7 @@
 Manage your own public Manjaro mirrors.
 
 Features:
-* Providers get email notifications when all branches are out od sync for more then 24h.
+* Providers get email notifications when all branches are out od sync for more then 24h and are enabled/disabled depending on their status.
 * Providers get an email when their mirrors are down.
 * Providers get access to a list of rsync mirrors.
 * Mirrors get automaticly disabled/enabled depending on their state.
@@ -17,4 +17,3 @@ Features:
 * Account can be delete by the provider.
 * Providers can add/remove/disable mirrors.
 * Providers can claim mirrors from other accounts via server confirmation token.
-
