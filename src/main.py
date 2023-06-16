@@ -5,7 +5,7 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
-    mirrors = Mirror().query.filter_by(active=True, in_sync=True).all().order_by(Mirror.country)
+    mirrors = Mirror().query.filter_by(active=True, in_sync=True).order_by(Mirror.country).all()
     return render_template(
         'index.html',
         mirrors=mirrors,
