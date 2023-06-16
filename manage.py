@@ -33,7 +33,6 @@ if "import-mirrors" in sys.argv:
             
             mirror_exists = Mirror().query.filter_by(address=url).first()
             if not mirror_exists:
-                print(mirror)
                 if not "global" in mirror["country"].lower():
                     country = test_country(mirror["country"].replace("_", " "))
                 else:
@@ -60,12 +59,13 @@ if "import-mirrors" in sys.argv:
                         http=http,
                         https=https,
                         speed = 0,
-                        ip_whitelist=ip
+                        ip_whitelist=ip,
+                        in_sync=True
                         )
                     )
                 
                     db.session.commit()
-                except KeyError as e:
+                except Exception as e:
                     print(e, status)
 
         

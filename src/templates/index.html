@@ -63,8 +63,7 @@
         <td class="flex gap-1 uppercase font-bold justify-center">
           {% if mirror.last_sync %} {{ mirror.last_sync }} {% else %}
           <span class="capitalize font-normal">in queue</span>
-          {% endif %} {% if not mirror.stable_is_sync or not
-          mirror.testing_is_sync or not mirror.testing_is_sync %}
+          {% endif %} {% if not mirror.in_sync %}
           <svg
             class="text-orange-300 inline"
             xmlns="http://www.w3.org/2000/svg"
