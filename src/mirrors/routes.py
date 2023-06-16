@@ -76,7 +76,6 @@ def arch64_status():
     response =_iter_mirrors("arch64")
     return response
     
-
 @mirror.route("/status.json")
 def status():
     response =_iter_mirrors("x64")
