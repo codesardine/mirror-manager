@@ -330,3 +330,50 @@ def remove_unused_accounts():
                 "Your account has been deleted",
                 f"Your Manjaro mirror manager account, was unused and has been deleted."
                 )
+            
+def test_rsync(address):
+    import subprocess
+    cmd = ["rsync", f"rsync://{address}"]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
+        result = proc.returncode
+        if result == 0:
+            return True  
+    except subprocess.TimeoutExpired:
+        pass
+
+    return False
+
+def test_country(country):
+    import pycountry
+    from flask import redirect, url_for, flash
+    if not "global" in country:
+        try:
+            is_country = pycountry.countries.get(name=country)
+            if not is_country:
+                fuzzy_search = pycountry.countries.search_fuzzy(country)
+                new_country = fuzzy_search[0].name
+
+                if new_country and "," in new_country:
+                    country = new_country.split(",")[0]
+                elif new_country and "," not in new_country:
+                    country = new_country
+                else:
+                    flash(f'Invalid country {country}', "error")
+                    return redirect(url_for('mirror.my_mirrors'))
+        except:
+            flash(f'Invalid country {country}', "error")
+            return redirect(url_for('mirror.my_mirrors'))   
+    else:
+        country = "global"
+
+    return country.lower()
+
+def sanitize_url(url):
+    if not url.endswith("/"):
+        url = url + "/"
+
+    if "http" in url:
+        url = url.split("://")[1]
+
+    return url.strip().replace(" ", "")

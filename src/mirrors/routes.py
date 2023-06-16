@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 from flask import make_response
 from src.utils.decorators import check_is_confirmed
 from src.utils.config import settings
+from src.mirrors.utils import test_country, sanitize_url
 import json
 
 mirror = Blueprint("mirror", __name__)
@@ -173,17 +174,8 @@ def mirror_post():
             address = request.form.get('mirror')
             country = request.form.get('country').lower()    
             from src.mirrors.utils import state_check
-
-            def sanitize_url(url):
-                if not address.endswith("/"):
-                    url = address + "/"
-
-                if "http" in url:
-                    url = url.split("://")[1]
-
-                return url.strip().replace(" ", "")
-
             address = sanitize_url(address)
+
             if not address:
                 flash('Please insert a mirror address', "error")
                 return redirect(url_for('mirror.my_mirrors'))
@@ -210,48 +202,24 @@ def mirror_post():
                         speed = server["access_time"]
                         ip = server["ip"]
                 else:
-                    import subprocess
-                    cmd = ["rsync", f"rsync://{address}"]
-                    try:
-                        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
-                        result = proc.returncode
-                        if result == 0:
-                            protocols["rsync"] = True  
-                    except subprocess.TimeoutExpired:
-                        pass
+                    from src.mirrors.utils import test_rsync
+                    rsync = test_rsync(address)
+                    if rsync:
+                        protocols["rsync"] = rsync
+                    
 
             if any(val == True for val in protocols.values()):
                 pass
             else:
                 flash('Something is wrong, or server does not exist', "error")
                 return redirect(url_for('mirror.my_mirrors'))
-            
-            if not "global" in country:
-                import pycountry
-                try:
-                    is_country = pycountry.countries.get(name=country)
-                    if not is_country:
-                        fuzzy_search = pycountry.countries.search_fuzzy(country)
-                        new_country = fuzzy_search[0].name
-
-                        if new_country and "," in new_country:
-                            country = new_country.split(",")[0]
-                        elif new_country and "," not in new_country:
-                            country = new_country
-                        else:
-                            flash(f'Invalid country {country}', "error")
-                            return redirect(url_for('mirror.my_mirrors'))
-                except:
-                    flash(f'Invalid country {country}', "error")
-                    return redirect(url_for('mirror.my_mirrors'))   
-            else:
-                country = "global"                       
+                                                   
             
             db.session.add(
                 Mirror(
                 address=sanitize_url(address),
                 account_id=current_user.id,
-                country=country.lower(),
+                country=test_country(country),
                 rsync=protocols["rsync"],
                 active=True,
                 http=protocols["http"],
