@@ -254,22 +254,13 @@ def check_offline_mirrors():
 def check_unsync_mirrors():
     mirrors = Mirror().query.filter_by(active=True).all()
     for mirror in mirrors:
-        branches = (
-            mirror.stable_is_sync, 
-            mirror.testing_is_sync, 
-            mirror.unstable_is_sync,
-            mirror.arm_stable_is_sync,
-            mirror.arm_testing_is_sync,
-            mirror.arm_unstable_is_sync
-            )
-
         today = date.today()
         m_date = mirror.last_sync.split(" ")[0]
         last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
         one_day = today - timedelta(days=1)
         seven_days = today - timedelta(days=7)
 
-        if not any(branches) and last_sync < seven_days:
+        if not mirror.x64_is_in_sync and not mirror.arm_is_in_sync and last_sync < seven_days:
             db.session.delete(mirror)
             db.session.commit()
             send_email(
@@ -278,21 +269,15 @@ def check_unsync_mirrors():
                 f"Your Manjaro mirror {mirror.address}, is outdated for a week and is now deleted."
                 )
                
-        elif not any(branches) and last_sync < one_day:
+        elif not mirror.x64_is_in_sync and not mirror.arm_is_in_sync and last_sync < one_day:
             from src.utils.email import send_email
             from src.account.models import Account
             user = Account.query.get(mirror.account_id)
-            mirror.in_sync = False
             send_email(
                 user.email,
                 "Your mirror is out of sync",
                 f"Your Manjaro mirror {mirror.address}, is outdated for 24h, there might be an issue with your sync process."
-                )
-        else:
-            mirror.in_sync = True
-
-        db.session.add(mirror)  
-        db.session.commit() 
+                ) 
 
 def populate_master_state():
     branches = settings["BRANCHES"]

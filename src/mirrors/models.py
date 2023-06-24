@@ -1,5 +1,5 @@
 from ..utils.extensions import db
-
+  
 
 class MasterRepo(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
@@ -34,7 +34,6 @@ class Mirror(db.Model):
     http = db.Column(db.Boolean)
     https = db.Column(db.Boolean)
     speed = db.Column(db.String(10))
-    in_sync = db.Column(db.Boolean, default=True)
 
     last_sync = db.Column(db.String(100))
     active = db.Column(db.Boolean)
@@ -65,4 +64,13 @@ class Mirror(db.Model):
     arm_unstable_last_sync = db.Column(db.String(100))
     arm_unstable_is_sync = db.Column(db.Boolean)
 
-
+    def is_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.stable_hash != master.stable_hash or \
+            self.testing_hash != master.testing_hash or \
+            self.unstable_hash != master.unstable_hash or \
+            self.arm_stable_hash != master.arm_stable_hash or \
+            self.arm_testing_hash != master.arm_testing_hash or \
+            self.arm_unstable_hash != master.arm_unstable_hash:
+            return False
+        else: return True

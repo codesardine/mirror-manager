@@ -63,7 +63,8 @@
         <td class="flex gap-1 uppercase font-bold justify-center">
           {% if mirror.last_sync %} {{ mirror.last_sync }} {% else %}
           <span class="capitalize font-normal">in queue</span>
-          {% endif %} {% if not mirror.in_sync %}
+          {% endif %} 
+          {% if not mirror.is_in_sync() %}
           <svg
             class="text-orange-300 inline"
             xmlns="http://www.w3.org/2000/svg"
@@ -74,25 +75,29 @@
               fill="currentColor"
               d="m40-120 440-760 440 760H40Zm104-60h672L480-760 144-180Zm340.175-57q12.825 0 21.325-8.675 8.5-8.676 8.5-21.5 0-12.825-8.675-21.325-8.676-8.5-21.5-8.5-12.825 0-21.325 8.675-8.5 8.676-8.5 21.5 0 12.825 8.675 21.325 8.676 8.5 21.5 8.5ZM454-348h60v-224h-60v224Zm26-122Z" />
           </svg>
-          {% endif %} {% if not mirror.stable_hash and not mirror.testing_hash
-          and not mirror.unstable_hash %}
+          {% endif %} 
+          {% if not mirror.stable_hash and not mirror.testing_hash and not mirror.unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">X64</span>
-          {% else %} {% if not mirror.stable_hash %}
+          {% else %} 
+          {% if not mirror.stable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">s</span>
           {% endif %} {% if not mirror.testing_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">t</span>
           {% endif %} {% if not mirror.unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">u</span>
-          {% endif %} {% endif %} {% if not mirror.arm_stable_hash and not
-          mirror.arm_testing_hash and not mirror.arm_unstable_hash %}
+          {% endif %} 
+          {% endif %} 
+          {% if not mirror.arm_stable_hash and not mirror.arm_testing_hash and not mirror.arm_unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">arm</span>
-          {% else %} {% if not mirror.arm_stable_hash %}
+          {% else %} 
+          {% if not mirror.arm_stable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">as</span>
           {% endif %} {% if not mirror.arm_testing_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">at</span>
           {% endif %} {% if not mirror.arm_unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">au</span>
-          {% endif %} {% endif %}
+          {% endif %}
+          {% endif %} 
         </td>
       </tr>
       {% endif %} {% endfor %}

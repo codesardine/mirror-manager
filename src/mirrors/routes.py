@@ -11,7 +11,7 @@ import json
 mirror = Blueprint("mirror", __name__)
 
 def _iter_mirrors(arch):
-    query = Mirror().query.filter_by(active=True, in_sync=True).all()
+    query = Mirror().query.filter_by(active=True).all()
     mirrors = []
     for mirror in query:
         if mirror.last_sync is not None:
