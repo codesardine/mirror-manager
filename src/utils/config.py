@@ -16,7 +16,7 @@ settings = {
     "WHITELIST_EMAIL": os.environ.get("WHITELIST_EMAIL"),
     "CHECK_BRANCHES_TIMEOUT_MINUTES": 30,
     "CHECK_OFFLINE_MIRRORS_HOURS": 48,
-    "CHECK_UNSYNC_MIRRORS_HOURS": 24,
+    "CHECK_UNSYNC_MIRRORS_HOURS": 1,
     "WEEKLY_EMAILS": 1,
     "MASTER_RSYNC": "repo.manjaro.org/repo/",
     "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable"),
