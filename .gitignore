@@ -160,6 +160,6 @@ cython_debug/
 #.idea/
 
 # frontend
-#/src/static/*.css
+/src/static/*.css
 /node_modules
 migrations/
