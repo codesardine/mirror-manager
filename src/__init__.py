@@ -49,7 +49,7 @@ def load_user(user_id):
     return Account.query.get(int(user_id))
 
 @scheduler.scheduled_job(IntervalTrigger(
-        minutes=settings["CHECK_BRANCHES_TIMEOUT_MINUTES"]))
+        minutes=settings["CHECK_BRANCHES_MINUTES"]))
 def check_branches():
     with app.app_context():
         populate_master_state()

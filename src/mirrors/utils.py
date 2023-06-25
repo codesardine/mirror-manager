@@ -101,6 +101,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
         state_file = get_state_contents(server["state_file"])
         if not branch:
             mirror.last_sync = state_file["last_sync"]
+            mirror.hash = state_file["hash"]
             if protocol == "http":
                 mirror.http = True
             elif protocol == "https:":
@@ -108,61 +109,30 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
         else:
             if not master:
                 mirror.speed = server["access_time"]
-                master_mirror = MasterRepo().query.first()
             
             if branch == "stable":
                 mirror.stable_hash = state_file["hash"].strip()
                 mirror.stable_last_sync = state_file["last_sync"]
-                if not master:
-                    if mirror.stable_hash != master_mirror.stable_hash:
-                        mirror.stable_is_sync = False
-                    else:
-                        mirror.stable_is_sync = True
 
             elif branch == "testing":
                 mirror.testing_hash = state_file["hash"].strip()
                 mirror.testing_last_sync = state_file["last_sync"]
-                if not master:
-                    if mirror.testing_hash != master_mirror.testing_hash:
-                        mirror.testing_is_sync = False
-                    else:
-                        mirror.testing_is_sync = True
 
             elif branch == "unstable":
                 mirror.unstable_hash = state_file["hash"].strip()
                 mirror.unstable_last_sync = state_file["last_sync"]
-                if not master:
-                    if mirror.unstable_hash != master_mirror.unstable_hash:
-                        mirror.unstable_is_sync = False
-                    else:
-                        mirror.unstable_is_sync = True
 
             elif branch == "arm-stable":
                 mirror.arm_stable_hash = state_file["hash"].strip()
                 mirror.arm_stable_last_sync = state_file["last_sync"]
-                if not master:
-                    if mirror.arm_stable_hash != master_mirror.arm_stable_hash:
-                        mirror.arm_stable_is_sync = False
-                    else:
-                        mirror.arm_stable_is_sync = True
 
             elif branch == "arm-testing":
                 mirror.arm_testing_hash = state_file["hash"].strip()
                 mirror.arm_testing_last_sync = state_file["last_sync"]
-                if not master:
-                    if mirror.arm_testing_hash != master_mirror.arm_testing_hash:
-                        mirror.arm_testing_is_sync = False
-                    else:
-                        mirror.arm_testing_is_sync = True
 
             elif branch == "arm-unstable":
                 mirror.arm_unstable_hash = state_file["hash"].strip()
                 mirror.arm_unstable_last_sync = state_file["last_sync"]
-                if not master:
-                    if mirror.arm_unstable_hash != master_mirror.arm_unstable_hash:
-                        mirror.arm_unstable_is_sync = False
-                    else:
-                        mirror.arm_unstable_is_sync = True
     else:
         if not master and not branch:
             if "https" in protocol:
@@ -178,7 +148,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
 
 def validate_branches():
     branches = settings["BRANCHES"]
-    mirrors = Mirror().query.filter_by(active=True, in_sync=True).all()
+    mirrors = Mirror().query.filter_by(active=True).all()
     futures = []
     with concurrent.futures.ThreadPoolExecutor(60) as executor:
         for mirror in mirrors:
@@ -289,8 +259,8 @@ def populate_master_state():
     protocol = "https"
     server = state_check(protocol, address=repo)
     file = get_state_contents(server["state_file"])
-    master_mirror.master_hash = file["hash"]
-    master_mirror.master_last_sync = file["last_sync"]
+    master_mirror.hash = file["hash"]
+    master_mirror.last_sync = file["last_sync"]
     db.session.add(master_mirror)  
     db.session.commit()    
 

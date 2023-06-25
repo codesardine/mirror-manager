@@ -3,8 +3,8 @@ from ..utils.extensions import db
 
 class MasterRepo(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
-    master_hash = db.Column(db.String(100))
-    master_last_sync = db.Column(db.String(100))
+    hash = db.Column(db.String(100))
+    last_sync = db.Column(db.String(100))
 
     stable_hash = db.Column(db.String(100), nullable=True)
     stable_last_sync = db.Column(db.String(100), nullable=True)
@@ -34,6 +34,7 @@ class Mirror(db.Model):
     http = db.Column(db.Boolean)
     https = db.Column(db.Boolean)
     speed = db.Column(db.String(10))
+    hash = db.Column(db.String(100))
 
     last_sync = db.Column(db.String(100))
     active = db.Column(db.Boolean)
@@ -42,35 +43,65 @@ class Mirror(db.Model):
 
     stable_hash = db.Column(db.String(100))
     stable_last_sync = db.Column(db.String(100))
-    stable_is_sync = db.Column(db.Boolean)
 
     testing_hash = db.Column(db.String(100))
     testing_last_sync = db.Column(db.String(100))
-    testing_is_sync = db.Column(db.Boolean)
 
     unstable_hash = db.Column(db.String(100))
     unstable_last_sync = db.Column(db.String(100))
-    unstable_is_sync = db.Column(db.Boolean)
 
     arm_stable_hash = db.Column(db.String(100))
     arm_stable_last_sync = db.Column(db.String(100))
-    arm_stable_is_sync = db.Column(db.Boolean)
 
     arm_testing_hash = db.Column(db.String(100))
     arm_testing_last_sync = db.Column(db.String(100))
-    arm_testing_is_sync = db.Column(db.Boolean)
 
     arm_unstable_hash = db.Column(db.String(100))
     arm_unstable_last_sync = db.Column(db.String(100))
-    arm_unstable_is_sync = db.Column(db.Boolean)
+
+    def stable_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.stable_hash != master.stable_hash:
+            return False
+        return True
+
+    def testing_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.testing_hash != master.testing_hash:
+            return False
+        return True
+
+    def unstable_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.unstable_hash != master.unstable_hash:
+            return False
+        return True
+
+    def arm_stable_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.arm_stable_hash != master.arm_stable_hash:
+            return False
+        return True
+
+    def arm_testing_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.arm_testing_hash != master.arm_testing_hash:
+            return False
+        return True
+
+    def arm_unstable_in_sync(self):
+        master = MasterRepo().query.get(1)
+        if self.arm_unstable_hash != master.arm_unstable_hash:
+            return False
+        return True
 
     def is_in_sync(self):
         master = MasterRepo().query.get(1)
-        if self.stable_hash != master.stable_hash or \
-            self.testing_hash != master.testing_hash or \
-            self.unstable_hash != master.unstable_hash or \
-            self.arm_stable_hash != master.arm_stable_hash or \
-            self.arm_testing_hash != master.arm_testing_hash or \
-            self.arm_unstable_hash != master.arm_unstable_hash:
+        if self.arm_unstable_hash != master.arm_unstable_hash and \
+            self.arm_testing_hash != master.arm_testing_hash and \
+            self.arm_stable_hash != master.arm_stable_hash and \
+            self.unstable_hash != master.unstable_hash and \
+            self.testing_hash != master.testing_hash and \
+            self.stable_hash != master.stable_hash:
             return False
-        else: return True
+        return True
