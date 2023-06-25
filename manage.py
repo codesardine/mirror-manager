@@ -59,8 +59,7 @@ if "import-mirrors" in sys.argv:
                         http=http,
                         https=https,
                         speed = 0,
-                        ip_whitelist=ip,
-                        in_sync=True
+                        ip_whitelist=ip
                         )
                     )
                 

@@ -188,7 +188,7 @@ def validate_branches():
         db.session.commit()
 
 def check_offline_mirrors():
-    mirrors = Mirror().query.filter_by(active=False, in_sync=True).all()
+    mirrors = Mirror().query.filter_by(active=False).all()
     for mirror in mirrors:
         protocols = {
             "http": False,
