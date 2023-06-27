@@ -14,9 +14,13 @@ def _iter_mirrors(arch):
     query = Mirror().query.filter_by(active=True).all()
     mirrors = []
     for mirror in query:
+        country = mirror.country.replace(" ", "_")
         protocols = []
+        if "russian" in country:
+            country = "russia"
+
         template = {
-        "country": mirror.country.replace(" ", "_"),
+        "country": country,
         "url": mirror.address,
         "protocols": protocols,
         "branches": [],
