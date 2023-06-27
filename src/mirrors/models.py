@@ -97,11 +97,11 @@ class Mirror(db.Model):
 
     def is_in_sync(self):
         master = MasterRepo().query.get(1)
-        if self.arm_unstable_hash != master.arm_unstable_hash and \
-            self.arm_testing_hash != master.arm_testing_hash and \
-            self.arm_stable_hash != master.arm_stable_hash and \
-            self.unstable_hash != master.unstable_hash and \
-            self.testing_hash != master.testing_hash and \
+        if self.arm_unstable_hash != master.arm_unstable_hash or \
+            self.arm_testing_hash != master.arm_testing_hash or \
+            self.arm_stable_hash != master.arm_stable_hash or \
+            self.unstable_hash != master.unstable_hash or \
+            self.testing_hash != master.testing_hash or \
             self.stable_hash != master.stable_hash:
             return False
         return True
