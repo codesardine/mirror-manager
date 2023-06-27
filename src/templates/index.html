@@ -65,16 +65,7 @@
           <span class="capitalize font-normal">in queue</span>
           {% endif %} 
           {% if not mirror.is_in_sync() %}
-          <svg
-            class="text-orange-300 inline"
-            xmlns="http://www.w3.org/2000/svg"
-            height="22"
-            viewBox="0 -960 960 960"
-            width="22">
-            <path
-              fill="currentColor"
-              d="m40-120 440-760 440 760H40Zm104-60h672L480-760 144-180Zm340.175-57q12.825 0 21.325-8.675 8.5-8.676 8.5-21.5 0-12.825-8.675-21.325-8.676-8.5-21.5-8.5-12.825 0-21.325 8.675-8.5 8.676-8.5 21.5 0 12.825 8.675 21.325 8.676 8.5 21.5 8.5ZM454-348h60v-224h-60v224Zm26-122Z" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="text-orange-300 inline sync" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="M167-160v-60h130l-15-12q-64-51-93-111t-29-134q0-106 62.5-190.5T387-784v62q-75 29-121 96.5T220-477q0 63 23.5 109.5T307-287l30 21v-124h60v230H167Zm407-15v-63q76-29 121-96.5T740-483q0-48-23.5-97.5T655-668l-29-26v124h-60v-230h230v60H665l15 14q60 56 90 120t30 123q0 106-62 191T574-175Z"/></svg>
           {% endif %} 
           {% if not mirror.stable_hash and not mirror.testing_hash and not mirror.unstable_hash %}
           <span class="px-2 bg-red-800 rounded-full shadow">X64</span>

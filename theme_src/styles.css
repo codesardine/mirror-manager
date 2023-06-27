@@ -10,3 +10,16 @@
 .navbar {
     padding: 0;
 }
+
+.sync {
+    animation: rotation 2s infinite linear;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(360deg);
+    }
+    to {
+        transform: rotate(0deg);
+    }
+}
