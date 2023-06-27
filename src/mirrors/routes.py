@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from src.mirrors.models import Mirror, MasterRepo
+from src.mirrors.models import Mirror
 from src.utils.extensions import db
 from flask_login import current_user, login_required
 from flask import make_response
