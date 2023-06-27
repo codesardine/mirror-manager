@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from src.mirrors.models import Mirror
+from src.mirrors.models import Mirror, MasterRepo
 from src.utils.extensions import db
 from flask_login import current_user, login_required
 from flask import make_response
@@ -10,7 +10,7 @@ import json
 
 mirror = Blueprint("mirror", __name__)
 
-def _iter_mirrors(arch):
+def _iter_mirrors():
     query = Mirror().query.filter_by(active=True).all()
     mirrors = []
     for mirror in query:
@@ -27,45 +27,42 @@ def _iter_mirrors(arch):
         "speed": mirror.speed            
         }
         
-        if arch == "arch64":
-            if not mirror.arm_stable_in_sync():
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
+        if not mirror.stable_in_sync():
+            template["branches"].append(0)
+        else:
+            template["branches"].append(1)
+        
+        if not mirror.testing_in_sync():
+            template["branches"].append(0)
+        else:
+            template["branches"].append(1)
+
+        if not mirror.unstable_in_sync():
+            template["branches"].append(0)
+        else:
+            template["branches"].append(1)
             
-            if not mirror.arm_testing_in_sync():
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
+        if not mirror.arm_stable_in_sync():
+            template["branches"].append(0)
+        else:
+            template["branches"].append(1)
+        
+        if not mirror.arm_testing_in_sync():
+            template["branches"].append(0)
+        else:
+            template["branches"].append(1)
 
-            if not mirror.arm_unstable_in_sync():
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
-
-        elif arch == "x64":
-            if not mirror.stable_in_sync():
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
-            
-            if not mirror.testing_in_sync():
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
-
-            if not mirror.unstable_in_sync():
-                template["branches"].append(0)
-            else:
-                template["branches"].append(1)
+        if not mirror.arm_unstable_in_sync():
+            template["branches"].append(0)
+        else:
+            template["branches"].append(1)            
 
         if mirror.http:
             protocols.append("http")
         if mirror.https:
             protocols.append("https")
         
-        if 1 in template["branches"]:
-            mirrors.append(template)
+        mirrors.append(template)
 
     response = make_response(
         json.dumps(mirrors)
@@ -73,15 +70,10 @@ def _iter_mirrors(arch):
     response.headers["Content-Type"] = "application/json"
     response.status_code = 200
     return response
-
-@mirror.route("/arch64-status.json")
-def arch64_status():
-    response =_iter_mirrors("arch64")
-    return response
     
 @mirror.route("/status.json")
 def status():
-    response =_iter_mirrors("x64")
+    response =_iter_mirrors()
     return response
 
 @mirror.route("/mirrors")
