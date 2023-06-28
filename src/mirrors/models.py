@@ -1,11 +1,18 @@
 from ..utils.extensions import db
-  
 
-class MasterRepo(db.Model):
+
+class ModelBase():
     id = db.Column(db.Integer, primary_key=True) 
+    last_modified = db.Column(db.DateTime, nullable=True)
     hash = db.Column(db.String(100))
     last_sync = db.Column(db.String(100))
 
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+
+class MasterRepo(db.Model, ModelBase):   
     stable_hash = db.Column(db.String(100), nullable=True)
     stable_last_sync = db.Column(db.String(100), nullable=True)
 
@@ -25,8 +32,7 @@ class MasterRepo(db.Model):
     arm_unstable_last_sync = db.Column(db.String(100), nullable=True)
 
 
-class Mirror(db.Model):
-    id = db.Column(db.Integer, primary_key=True) 
+class Mirror(db.Model, ModelBase):
     account_id = db.Column(db.Integer, db.ForeignKey('account.id'))
     address = db.Column(db.String(100), unique=True, nullable=False)
     rsync = db.Column(db.Boolean)
@@ -34,9 +40,7 @@ class Mirror(db.Model):
     http = db.Column(db.Boolean)
     https = db.Column(db.Boolean)
     speed = db.Column(db.String(10))
-    hash = db.Column(db.String(100))
-
-    last_sync = db.Column(db.String(100))
+  
     active = db.Column(db.Boolean)
     user_notified = db.Column(db.Boolean)   
     ip_whitelist = db.Column(db.String())
