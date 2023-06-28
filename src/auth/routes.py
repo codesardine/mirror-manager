@@ -86,7 +86,7 @@ def signup_post():
         flash("A confirmation email has been sent via email.")
         return redirect(url_for("account.user_account"))
     except Exception:
-        flash("Enable to send confirmation email.")
+        flash("Enable to send confirmation email.", "warning")
         return redirect(url_for('auth.signup')) 
 
 @auth.route("/logout")
