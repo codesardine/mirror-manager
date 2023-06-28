@@ -6,6 +6,7 @@ from src.utils.extensions import db
 from src.utils.config import settings
 import concurrent.futures
 import socket
+from dateutil.parser import parse as parsedate
 
 def whitelist_email():
     from src.utils.email import send_email
@@ -92,59 +93,59 @@ def get_state_contents(file):
     return sync
 
 def validate_state(mirror, address, protocol, master=False, branch=None):
-    if branch:
-        server = state_check(protocol, address=address, branch=branch)
-    else:
-        server = state_check(protocol, address=address)
-        
-    if server["state_file_exists"]:
-        state_file = get_state_contents(server["state_file"])
-        if not branch:
-            mirror.last_sync = state_file["last_sync"]
-            mirror.hash = state_file["hash"]
-            if protocol == "http":
-                mirror.http = True
-            elif protocol == "https:":
-                mirror.https = True
+        if branch:
+            server = state_check(protocol, address=address, branch=branch)
         else:
-            if not master:
-                mirror.speed = server["access_time"]
+            server = state_check(protocol, address=address)
             
-            if branch == "stable":
-                mirror.stable_hash = state_file["hash"].strip()
-                mirror.stable_last_sync = state_file["last_sync"]
-
-            elif branch == "testing":
-                mirror.testing_hash = state_file["hash"].strip()
-                mirror.testing_last_sync = state_file["last_sync"]
-
-            elif branch == "unstable":
-                mirror.unstable_hash = state_file["hash"].strip()
-                mirror.unstable_last_sync = state_file["last_sync"]
-
-            elif branch == "arm-stable":
-                mirror.arm_stable_hash = state_file["hash"].strip()
-                mirror.arm_stable_last_sync = state_file["last_sync"]
-
-            elif branch == "arm-testing":
-                mirror.arm_testing_hash = state_file["hash"].strip()
-                mirror.arm_testing_last_sync = state_file["last_sync"]
-
-            elif branch == "arm-unstable":
-                mirror.arm_unstable_hash = state_file["hash"].strip()
-                mirror.arm_unstable_last_sync = state_file["last_sync"]
-    else:
-        if not master and not branch:
-            if "https" in protocol:
-                mirror.https = False
+        if server["state_file_exists"]:
+            state_file = get_state_contents(server["state_file"])
+            if not branch:
+                mirror.last_sync = state_file["last_sync"]
+                mirror.hash = state_file["hash"]
+                if protocol == "http":
+                    mirror.http = True
+                elif protocol == "https:":
+                    mirror.https = True
             else:
-                mirror.http = False
-            
-            if not mirror.http and not mirror.https:
-                mirror.active = False
-    
-    db.session.add(mirror)      
-    db.session.commit()
+                if not master:
+                    mirror.speed = server["access_time"]
+                
+                if branch == "stable":
+                    mirror.stable_hash = state_file["hash"].strip()
+                    mirror.stable_last_sync = state_file["last_sync"]
+
+                elif branch == "testing":
+                    mirror.testing_hash = state_file["hash"].strip()
+                    mirror.testing_last_sync = state_file["last_sync"]
+
+                elif branch == "unstable":
+                    mirror.unstable_hash = state_file["hash"].strip()
+                    mirror.unstable_last_sync = state_file["last_sync"]
+
+                elif branch == "arm-stable":
+                    mirror.arm_stable_hash = state_file["hash"].strip()
+                    mirror.arm_stable_last_sync = state_file["last_sync"]
+
+                elif branch == "arm-testing":
+                    mirror.arm_testing_hash = state_file["hash"].strip()
+                    mirror.arm_testing_last_sync = state_file["last_sync"]
+
+                elif branch == "arm-unstable":
+                    mirror.arm_unstable_hash = state_file["hash"].strip()
+                    mirror.arm_unstable_last_sync = state_file["last_sync"]
+        else:
+            if not master and not branch:
+                if "https" in protocol:
+                    mirror.https = False
+                else:
+                    mirror.http = False
+                
+                if not mirror.http and not mirror.https:
+                    mirror.active = False
+        
+        db.session.add(mirror)      
+        db.session.commit()
 
 def validate_branches():
     branches = settings["BRANCHES"]
@@ -332,3 +333,32 @@ def sanitize_url(url):
         url = url.split("://")[1]
 
     return url.strip().replace(" ", "")
+
+def is_out_of_date(mirror):
+        #TODO refractor for last modified
+        if not mirror.hash:
+            return True
+        if mirror.https:
+            protocol = "https"
+        else:
+            protocol = "http"
+
+        headers = {
+            "User-Agent": settings["USER_AGENT"]
+        }
+        target = protocol+"://"+mirror.address+"state"
+        response = requests.head(url=target, timeout=3, headers=headers) 
+        try:
+            remote_datetime = parsedate(response.headers['Last-Modified']).replace(tzinfo=None)
+            
+            if not mirror.last_modified:
+                mirror.last_modified = remote_datetime
+                mirror.save()
+            
+            if  remote_datetime > mirror.last_modified:
+                mirror.last_modified = remote_datetime
+                mirror.save()
+                return True
+            return False
+        except KeyError:
+            return False
