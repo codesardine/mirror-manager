@@ -224,14 +224,17 @@ def check_offline_mirrors():
 
 def check_unsync_mirrors():
     mirrors = Mirror().query.filter_by(active=True).all()
+    from src.utils.email import send_email
+    from src.account.models import Account
     for mirror in mirrors:
+        user = Account.query.get(mirror.account_id)
         today = date.today()
         m_date = mirror.last_sync.split(" ")[0]
         last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
         one_day = today - timedelta(days=1)
         seven_days = today - timedelta(days=7)
 
-        if not mirror.is_out_sync and last_sync < seven_days:
+        if not mirror.is_out_sync and last_sync < seven_days or last_sync == None:
             db.session.delete(mirror)
             db.session.commit()
             send_email(
@@ -241,9 +244,6 @@ def check_unsync_mirrors():
                 )
                
         elif not mirror.is_out_sync and last_sync < one_day:
-            from src.utils.email import send_email
-            from src.account.models import Account
-            user = Account.query.get(mirror.account_id)
             send_email(
                 user.email,
                 "Your mirror is out of sync",
