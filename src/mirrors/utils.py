@@ -228,27 +228,38 @@ def check_unsync_mirrors():
     from src.account.models import Account
     for mirror in mirrors:
         user = Account.query.get(mirror.account_id)
-        today = date.today()
-        m_date = mirror.last_sync.split(" ")[0]
-        last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
-        one_day = today - timedelta(days=1)
-        seven_days = today - timedelta(days=7)
+        
+        try:
+            m_date = mirror.last_sync.split(" ")[0]
+            today = date.today()
+            last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
+            one_day = today - timedelta(days=1)
+            seven_days = today - timedelta(days=7)
 
-        if not mirror.is_out_sync and last_sync < seven_days or last_sync == None:
+            if mirror.is_out_sync and last_sync < seven_days:
+                db.session.delete(mirror)
+                db.session.commit()
+                send_email(
+                    user.email,
+                    "Mirror out of sync for a week",
+                    f"Your Manjaro mirror {mirror.address}, is outdated for a week and is now deleted."
+                    )
+                
+            elif mirror.is_out_sync and last_sync < one_day:
+                send_email(
+                    user.email,
+                    "Your mirror is out of sync",
+                    f"Your Manjaro mirror {mirror.address}, is outdated for 24h, there might be an issue with your sync process."
+                    ) 
+        except AttributeError as e:
+            print(e)
             db.session.delete(mirror)
             db.session.commit()
             send_email(
                 user.email,
-                "Mirror out of sync for a week",
-                f"Your Manjaro mirror {mirror.address}, is outdated for a week and is now deleted."
+                "Your mirror has been deleted",
+                f"Your Manjaro mirror {mirror.address}, is missing the state file and has now been deleted."
                 )
-               
-        elif not mirror.is_out_sync and last_sync < one_day:
-            send_email(
-                user.email,
-                "Your mirror is out of sync",
-                f"Your Manjaro mirror {mirror.address}, is outdated for 24h, there might be an issue with your sync process."
-                ) 
 
 def populate_master_state():
     branches = settings["BRANCHES"]
