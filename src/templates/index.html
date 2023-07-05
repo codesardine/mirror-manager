@@ -2,7 +2,7 @@
 <div
   class="overflow-x-auto self-start mt-8 bg-base-100 rounded-2xl w-full max-w-screen-lg mx-auto">
   <div
-    class="text-xs py-2 px-4 font-semibold capitalize text-gray-800 flex gap-2">
+    class="text-xs py-2 px-4 font-semibold capitalize text-gray-800 flex gap-2 items-center justify-between">
     <div class="stats shadow">
       <div class="stat p-0">
         <div class="stat-figure text-primary">
@@ -21,6 +21,20 @@
         <div class="stat-value text-primary mb-1">{{ total }} MR</div>
       </div>
     </div>
+    <form id="select" method="POST" action="/">
+      <select id="arch-select" name="arch-select" class="select-sm select select-secondary text-white">
+        <option value="x64" {% if select != 'arm'%}selected{% endif %}>X64</option>
+        <option value="arm" {% if select == 'arm'%}selected{% endif %}>ARM</option>
+      </select>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+    <script>
+      const select = document.querySelector("#arch-select")
+      select.onchange = function(ev) {
+        let form = document.getElementById("select")
+        form.submit()
+      }
+    </script>
   </div>
   <h1 class="w-full text-center py-4 text-xl font-semibold mb-4">
     Public Mirrors
@@ -35,9 +49,6 @@
         <th>S</th>
         <th>T</th>
         <th>U</th>
-        <th>AS</th>
-        <th>AT</th>
-        <th>AU</th>
       </tr>
     </thead>
     <tbody>
@@ -66,11 +77,12 @@
           >
           {% endif %}
         </td>
-        <td class="uppercase font-bold">
+        <td class="uppercase">
           {% if mirror.last_sync %} {{ mirror.last_sync }} {% else %}
-          <span class="capitalize font-normal">in queue</span>
+          <span>in queue</span>
           {% endif %} 
         </td>
+        {% if select != 'arm' %} 
         <td>
           {% if not mirror.stable_hash %}
           <svg xmlns="http://www.w3.org/2000/svg" class="text-red-400 inline" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="M479.982-280q14.018 0 23.518-9.482 9.5-9.483 9.5-23.5 0-14.018-9.482-23.518-9.483-9.5-23.5-9.5-14.018 0-23.518 9.482-9.5 9.483-9.5 23.5 0 14.018 9.482 23.518 9.483 9.5 23.5 9.5ZM453-433h60v-253h-60v253Zm27.266 353q-82.734 0-155.5-31.5t-127.266-86q-54.5-54.5-86-127.341Q80-397.681 80-480.5q0-82.819 31.5-155.659Q143-709 197.5-763t127.341-85.5Q397.681-880 480.5-880q82.819 0 155.659 31.5Q709-817 763-763t85.5 127Q880-563 880-480.266q0 82.734-31.5 155.5T763-197.684q-54 54.316-127 86Q563-80 480.266-80Zm.234-60Q622-140 721-239.5t99-241Q820-622 721.188-721 622.375-820 480-820q-141 0-240.5 98.812Q140-622.375 140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>
@@ -98,8 +110,9 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="text-green-400 inline" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z"/></svg>
           {% endif %}
         </td>
+        {% else %}
         <td>
-        {% if not mirror.arm_stable_hash %}
+          {% if not mirror.arm_stable_hash %}
           <svg xmlns="http://www.w3.org/2000/svg" class="text-red-400 inline" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="M479.982-280q14.018 0 23.518-9.482 9.5-9.483 9.5-23.5 0-14.018-9.482-23.518-9.483-9.5-23.5-9.5-14.018 0-23.518 9.482-9.5 9.483-9.5 23.5 0 14.018 9.482 23.518 9.483 9.5 23.5 9.5ZM453-433h60v-253h-60v253Zm27.266 353q-82.734 0-155.5-31.5t-127.266-86q-54.5-54.5-86-127.341Q80-397.681 80-480.5q0-82.819 31.5-155.659Q143-709 197.5-763t127.341-85.5Q397.681-880 480.5-880q82.819 0 155.659 31.5Q709-817 763-763t85.5 127Q880-563 880-480.266q0 82.734-31.5 155.5T763-197.684q-54 54.316-127 86Q563-80 480.266-80Zm.234-60Q622-140 721-239.5t99-241Q820-622 721.188-721 622.375-820 480-820q-141 0-240.5 98.812Q140-622.375 140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></svg>
           {% elif not mirror.arm_stable_in_sync %}
           <svg xmlns="http://www.w3.org/2000/svg" class="text-orange-400 inline sync" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="M167-160v-60h130l-15-12q-64-51-93-111t-29-134q0-106 62.5-190.5T387-784v62q-75 29-121 96.5T220-477q0 63 23.5 109.5T307-287l30 21v-124h60v230H167Zm407-15v-63q76-29 121-96.5T740-483q0-48-23.5-97.5T655-668l-29-26v124h-60v-230h230v60H665l15 14q60 56 90 120t30 123q0 106-62 191T574-175Z"/></svg>
@@ -124,7 +137,9 @@
           {% else %}
           <svg xmlns="http://www.w3.org/2000/svg" class="text-green-400 inline" height="22" viewBox="0 -960 960 960" width="22"><path fill="currentColor" d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z"/></svg>
           {% endif %}
-        </td>        
+        </td>
+        {% endif %}
+             
       </tr>
       {% endif %} {% endfor %}
     </tbody>
