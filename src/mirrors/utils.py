@@ -8,6 +8,13 @@ import concurrent.futures
 import socket
 from dateutil.parser import parse as parsedate
 
+
+def headers():
+    return {
+            "User-Agent": settings["USER_AGENT"],
+            #'Accept-encoding': 'gzip',
+        }
+
 def whitelist_email():
     from src.utils.email import send_email
     query = Mirror().query.filter_by(active=True).all()  
@@ -30,10 +37,7 @@ def validate_ownership(protocol, address, file):
     target = f"{protocol}://{address}{file}"
 
     try:
-        headers = {
-            "User-Agent": settings["USER_AGENT"]
-        }
-        response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
+        response = requests.get(f'{target}', headers=headers(), timeout=3, stream=True)
         response.raise_for_status()
     except HTTPError:
         return False
@@ -52,10 +56,7 @@ def state_check(protocol, address, branch=None):
     target = f"{protocol}://{address}{file}"
 
     try:
-        headers = {
-            "User-Agent": settings["USER_AGENT"]
-        }
-        response = requests.get(f'{target}', headers=headers, timeout=3, stream=True)
+        response = requests.get(f'{target}', headers=headers(), timeout=3, stream=True)
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
@@ -354,11 +355,8 @@ def is_out_of_date(mirror):
         else:
             protocol = "http"
 
-        headers = {
-            "User-Agent": settings["USER_AGENT"]
-        }
         target = protocol+"://"+mirror.address+"state"
-        response = requests.head(url=target, timeout=3, headers=headers) 
+        response = requests.head(url=target, timeout=3, headers=headers()) 
         try:
             remote_datetime = parsedate(response.headers['Last-Modified']).replace(tzinfo=None)
             
