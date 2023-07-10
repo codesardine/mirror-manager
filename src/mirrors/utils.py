@@ -237,7 +237,7 @@ def check_unsync_mirrors():
             one_day = today - timedelta(days=1)
             seven_days = today - timedelta(days=7)
 
-            if mirror.is_out_sync and last_sync < seven_days:
+            if mirror.is_out_sync() and last_sync < seven_days:
                 db.session.delete(mirror)
                 db.session.commit()
                 send_email(
@@ -246,7 +246,7 @@ def check_unsync_mirrors():
                     f"Your Manjaro mirror {mirror.address}, is outdated for a week and is now deleted."
                     )
                 
-            elif mirror.is_out_sync and last_sync < one_day:
+            elif mirror.is_out_sync() and last_sync < one_day:
                 send_email(
                     user.email,
                     "Your mirror is out of sync",
@@ -259,7 +259,7 @@ def check_unsync_mirrors():
             send_email(
                 user.email,
                 "Your mirror has been deleted",
-                f"Your Manjaro mirror {mirror.address}, is missing the state file and has now been deleted."
+                f"Your Manjaro mirror {mirror.address}, is missing the required state file/s and has now been deleted."
                 )
 
 def populate_master_state():

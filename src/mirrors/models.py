@@ -117,6 +117,7 @@ class Mirror(db.Model, ModelBase):
             self.arm_stable_hash != master.arm_stable_hash and \
             self.unstable_hash != master.unstable_hash and \
             self.testing_hash != master.testing_hash and \
-            self.stable_hash != master.stable_hash:
-            return False
-        return True
+            self.stable_hash != master.stable_hash and \
+            self.hash != master.hash:
+            return True
+        return False
