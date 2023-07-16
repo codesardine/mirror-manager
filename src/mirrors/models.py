@@ -7,6 +7,13 @@ class ModelBase():
     hash = db.Column(db.String(100))
     last_sync = db.Column(db.String(100))
 
+    def last_sync_date(self):
+        from datetime import datetime
+        if self.last_sync != None:
+            remove_time = self.last_sync.split(" ")[0]
+            return datetime.strptime(remove_time, '%Y-%m-%d').date()
+        return 999
+
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -98,17 +105,6 @@ class Mirror(db.Model, ModelBase):
         if self.arm_unstable_hash != master.arm_unstable_hash:
             return False
         return True
-
-    def is_in_sync(self):
-        master = MasterRepo().query.get(1)
-        if self.arm_unstable_hash != master.arm_unstable_hash or \
-            self.arm_testing_hash != master.arm_testing_hash or \
-            self.arm_stable_hash != master.arm_stable_hash or \
-            self.unstable_hash != master.unstable_hash or \
-            self.testing_hash != master.testing_hash or \
-            self.stable_hash != master.stable_hash:
-            return False
-        return True
     
     def is_out_sync(self):
         master = MasterRepo().query.get(1)
@@ -117,7 +113,18 @@ class Mirror(db.Model, ModelBase):
             self.arm_stable_hash != master.arm_stable_hash and \
             self.unstable_hash != master.unstable_hash and \
             self.testing_hash != master.testing_hash and \
-            self.stable_hash != master.stable_hash and \
-            self.hash != master.hash:
+            self.stable_hash != master.stable_hash:
             return True
         return False
+    
+    def is_outdated_by(self):
+        date = self.last_sync_date()
+        if date == 999:
+            return 999
+        master = MasterRepo().query.get(1)
+        delta = master.last_sync_date() - date
+        return delta.days
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()

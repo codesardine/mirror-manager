@@ -103,7 +103,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
             state_file = get_state_contents(server["state_file"])
             if not branch:
                 mirror.last_sync = state_file["last_sync"]
-                mirror.hash = state_file["hash"]
+                mirror.hash = state_file["hash"].strip()
                 if protocol == "http":
                     mirror.http = True
                 elif protocol == "https:":
@@ -145,8 +145,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
                 if not mirror.http and not mirror.https:
                     mirror.active = False
         
-        db.session.add(mirror)      
-        db.session.commit()
+        mirror.save()
 
 def validate_branches():
     branches = settings["BRANCHES"]
@@ -185,9 +184,7 @@ def validate_branches():
                     f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
                     )
                 mirror.user_notified = True      
-                db.session.add(mirror)    
-
-        db.session.commit()
+                mirror.save()
 
 def check_offline_mirrors():
     mirrors = Mirror().query.filter_by(active=False).all()
@@ -219,9 +216,7 @@ def check_offline_mirrors():
                 "Your mirror is back online",
                 f"Your Manjaro mirror {mirror.address}, has been activated."
                 )
-            db.session.add(mirror)        
-    
-    db.session.commit()
+            mirror.save()
 
 def check_unsync_mirrors():
     mirrors = Mirror().query.filter_by(active=True).all()
@@ -229,38 +224,41 @@ def check_unsync_mirrors():
     from src.account.models import Account
     for mirror in mirrors:
         user = Account.query.get(mirror.account_id)
-        
-        try:
-            m_date = mirror.last_sync.split(" ")[0]
-            today = date.today()
-            last_sync = datetime.strptime(m_date, '%Y-%m-%d').date()
-            one_day = today - timedelta(days=1)
-            seven_days = today - timedelta(days=7)
-
-            if mirror.is_out_sync() and last_sync < seven_days:
-                db.session.delete(mirror)
-                db.session.commit()
+        if mirror.is_out_sync():
+            print("Outdated:", mirror.address, mirror.is_outdated_by(), mirror.last_sync_date())
+            subject = f"Mirror out of sync for {mirror.is_outdated_by()} days"
+            message = f"Your Manjaro mirror {mirror.address}, is outdated for {mirror.is_outdated_by()} days"
+            msg_deleted = "and is now deleted."
+            if mirror.is_outdated_by() == 999:
+                msg = "Your mirror is missing state files"
+                mirror.delete()
                 send_email(
                     user.email,
-                    "Mirror out of sync for a week",
-                    f"Your Manjaro mirror {mirror.address}, is outdated for a week and is now deleted."
+                    msg,
+                    f"{msg} {msg_deleted}"
                     )
                 
-            elif mirror.is_out_sync() and last_sync < one_day:
+            elif mirror.is_outdated_by() >= 14:
+                mirror.delete()
                 send_email(
                     user.email,
-                    "Your mirror is out of sync",
-                    f"Your Manjaro mirror {mirror.address}, is outdated for 24h, there might be an issue with your sync process."
+                    subject,
+                    f"{message} {msg_deleted}"
+                    )
+                
+            elif mirror.is_outdated_by() >= 7:
+                send_email(
+                    user.email,
+                    subject,
+                    f"{message} and will be deleted from the poll after 14 days."
+                    )
+                
+            elif mirror.is_outdated_by() == 1:
+                send_email(
+                    user.email,
+                    subject,
+                    message
                     ) 
-        except AttributeError as e:
-            print(e)
-            db.session.delete(mirror)
-            db.session.commit()
-            send_email(
-                user.email,
-                "Your mirror has been deleted",
-                f"Your Manjaro mirror {mirror.address}, is missing the required state file/s and has now been deleted."
-                )
 
 def populate_master_state():
     branches = settings["BRANCHES"]
@@ -274,8 +272,7 @@ def populate_master_state():
     file = get_state_contents(server["state_file"])
     master_mirror.hash = file["hash"]
     master_mirror.last_sync = file["last_sync"]
-    db.session.add(master_mirror)  
-    db.session.commit()    
+    master_mirror.save()  
 
     for branch in branches:
        validate_state(master_mirror, repo, protocol, branch=branch, master=True)    
