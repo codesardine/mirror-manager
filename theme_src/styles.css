@@ -15,6 +15,10 @@
     animation: rotation 2s infinite linear;
 }
 
+.table :where(th, td) {
+    padding: .75rem .9rem;
+  }
+
 @keyframes rotation {
     from {
         transform: rotate(360deg);

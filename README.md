@@ -1,4 +1,4 @@
-## Manjaro Mirrors Manager
+## Manjaro Mirror Manager
 
 # Autonomous mirror management tool
 
@@ -17,3 +17,5 @@ Features:
 * Account can be delete by the provider.
 * Providers can add/remove/disable mirrors.
 * Providers can claim mirrors from other accounts via server confirmation token.
+* Providers will get a email a day after a mirror is out of sync for more than a week
+* Out of sync mirrors for more than 2 weeks will be automaticly deleted and the provider will get a deletion email

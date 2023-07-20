@@ -216,7 +216,12 @@ def check_offline_mirrors():
                 "Your mirror is back online",
                 f"Your Manjaro mirror {mirror.address}, has been activated."
                 )
-            mirror.save()
+            
+        else:
+            if mirror.points >= 1:
+                    mirror.points = mirror.points - 1
+                    
+        mirror.save()
 
 def check_unsync_mirrors():
     mirrors = Mirror().query.filter_by(active=True).all()
@@ -259,6 +264,13 @@ def check_unsync_mirrors():
                     subject,
                     message
                     ) 
+            
+            if mirror.is_outdated_by() >= 1 and mirror.is_outdated_by() <= 14:
+                if mirror.points >= 1:
+                    mirror.points = mirror.points - 1
+            else:
+                if mirror.points != 360:
+                    mirror.points = mirror.points + 1
 
 def populate_master_state():
     branches = settings["BRANCHES"]

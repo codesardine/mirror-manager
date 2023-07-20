@@ -46,6 +46,7 @@
         <th>Country</th>
         <th>Protocols</th>
         <th>Last Sync</th>
+        <th>Reliability</th>
         <th>S</th>
         <th>T</th>
         <th>U</th>
@@ -82,6 +83,7 @@
           <span>in queue</span>
           {% endif %} 
         </td>
+        <td>{{ mirror.get_percentage() }}</td>
         {% if select != 'arm' %} 
         <td>
           {% if not mirror.stable_hash %}

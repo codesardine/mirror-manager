@@ -47,6 +47,7 @@ class Mirror(db.Model, ModelBase):
     http = db.Column(db.Boolean)
     https = db.Column(db.Boolean)
     speed = db.Column(db.String(10))
+    points = db.Column(db.Integer, default=360)
   
     active = db.Column(db.Boolean)
     user_notified = db.Column(db.Boolean)   
@@ -69,6 +70,9 @@ class Mirror(db.Model, ModelBase):
 
     arm_unstable_hash = db.Column(db.String(100))
     arm_unstable_last_sync = db.Column(db.String(100))
+
+    def get_percentage(self):
+        return f"{int(self.points/360*100)}%"
 
     def stable_in_sync(self):
         master = MasterRepo().query.get(1)
