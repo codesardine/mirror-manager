@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 from src import db, app
+from src.mirrors.utils import populate_master_state, validate_branches
 import sys
 
+if "update-db" in sys.argv:
+    with app.app_context():
+        populate_master_state()
+        validate_branches()
         
 if "create-db" in sys.argv:
     with app.app_context():
