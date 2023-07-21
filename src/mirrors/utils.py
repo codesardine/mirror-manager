@@ -235,7 +235,7 @@ def check_unsync_mirrors():
             message = f"Your Manjaro mirror {mirror.address}, is outdated for {mirror.is_outdated_by()} days"
             msg_deleted = "and is now deleted."
             if mirror.is_outdated_by() == 999:
-                msg = "Your mirror is missing state files"
+                msg = f"Your mirror {mirror.address} is missing state files"
                 mirror.delete()
                 send_email(
                     user.email,
