@@ -269,7 +269,7 @@ def check_unsync_mirrors():
                 if mirror.points >= 1:
                     mirror.points = mirror.points - 1
             else:
-                if mirror.points != 360:
+                if mirror.points != settings["POINTS_DAYS"]:
                     mirror.points = mirror.points + 1
 
 def populate_master_state():

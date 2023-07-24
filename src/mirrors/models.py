@@ -1,4 +1,5 @@
-from ..utils.extensions import db
+from src.utils.extensions import db
+from src.utils.config import settings
 
 
 class ModelBase():
@@ -47,7 +48,7 @@ class Mirror(db.Model, ModelBase):
     http = db.Column(db.Boolean)
     https = db.Column(db.Boolean)
     speed = db.Column(db.String(10))
-    points = db.Column(db.Integer, default=180)
+    points = db.Column(db.Integer, default=settings["MAX_POINTS"])
   
     active = db.Column(db.Boolean)
     user_notified = db.Column(db.Boolean)   
@@ -71,8 +72,8 @@ class Mirror(db.Model, ModelBase):
     arm_unstable_hash = db.Column(db.String(100))
     arm_unstable_last_sync = db.Column(db.String(100))
 
-    def get_percentage(self):
-        return f"{int(self.points/180*100)}%"
+    def get_points(self):
+        return f"{int(self.points/settings['MAX_POINTS']*100)}%"
 
     def stable_in_sync(self):
         master = MasterRepo().query.get(1)

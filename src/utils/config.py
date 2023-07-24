@@ -20,5 +20,6 @@ settings = {
     "WEEKLY_EMAILS": 1,
     "MASTER_RSYNC": "repo.manjaro.org/repo/",
     "BRANCHES": ("stable", "testing", "unstable", "arm-stable", "arm-testing", "arm-unstable"),
-    "USER_AGENT": "ManjaroMirrorBot/1.1"
+    "USER_AGENT": "ManjaroMirrorBot/1.1",
+    "MAX_POINTS": 180,
 }
