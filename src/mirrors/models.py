@@ -72,6 +72,12 @@ class Mirror(db.Model, ModelBase):
     arm_unstable_hash = db.Column(db.String(100))
     arm_unstable_last_sync = db.Column(db.String(100))
 
+    def get_protocol(self):
+        if self.http:
+            return "http"
+        elif self.https:
+            return "https"
+
     def get_points(self):
         return f"{int(self.points/settings['MAX_POINTS']*100)}%"
 

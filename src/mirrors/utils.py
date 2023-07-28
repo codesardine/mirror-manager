@@ -55,19 +55,22 @@ def state_check(protocol, address, branch=None):
     start = time.time()
     target = f"{protocol}://{address}{file}"
 
+    def get_ipv4(response):
+        return response.raw._connection.sock.getpeername()[0]
+    
+    def get_ipv6():
+        try:
+            return socket.getaddrinfo(address, None, family=socket.AF_INET6)[0][4][0]
+        except Exception as e:
+            print(e)
+            return ""
+
     try:
         response = requests.get(f'{target}', headers=headers(), timeout=3, stream=True)
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
-        res = response.raw._connection.sock.getpeername()
-        ip = res[0]
-        #port = res[1]
-        try:
-            ipv6 = socket.getaddrinfo(address, None, family=socket.AF_INET6)
-            ip += f" {ipv6[0][4][0]}"
-        except Exception as e:
-            print(e)
+        ip = get_ipv4(response)
     except HTTPError:
         return {"state_file_exists": False}
     except Exception: 
@@ -77,7 +80,7 @@ def state_check(protocol, address, branch=None):
         "state_file_exists": True,
         "access_time": str(elapsed)[:5],
         "state_file": response.text,
-        "ip": ip
+        "ip": f"{ip} {get_ipv6()}"
         }
     
 def get_state_contents(file):
@@ -104,10 +107,6 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
             if not branch:
                 mirror.last_sync = state_file["last_sync"]
                 mirror.hash = state_file["hash"].strip()
-                if protocol == "http":
-                    mirror.http = True
-                elif protocol == "https:":
-                    mirror.https = True
             else:
                 if not master:
                     mirror.speed = server["access_time"]
@@ -136,12 +135,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
                     mirror.arm_unstable_hash = state_file["hash"].strip()
                     mirror.arm_unstable_last_sync = state_file["last_sync"]
         else:
-            if not master and not branch:
-                if "https" in protocol:
-                    mirror.https = False
-                else:
-                    mirror.http = False
-                
+            if not master and not branch:                
                 if not mirror.http and not mirror.https:
                     mirror.active = False
         
@@ -150,42 +144,68 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
 def validate_branches():
     branches = settings["BRANCHES"]
     mirrors = Mirror().query.filter_by(active=True).all()
+    master = MasterRepo().query.get(1)
     futures = []
-    with concurrent.futures.ThreadPoolExecutor(60) as executor:
+    with concurrent.futures.ThreadPoolExecutor(20) as executor:
+        start = time.time()
         for mirror in mirrors:
-            if mirror.https:
-                futures.append(executor.submit(
-                        validate_state(mirror, mirror.address, "https")
-                        ))
-            elif mirror.http:
-                futures.append(executor.submit(
-                        validate_state(mirror, mirror.address, "http")
-                        ))
+            print()
+            print(mirror.address, mirror.get_protocol())
+            if mirror.hash != master.hash:
+                def queue(mirror, branch=None):
+                    if branch:
+                        print(f"Updating", branch, mirror.hash, master.hash)
+                        return validate_state(mirror, mirror.address, mirror.get_protocol(), branch=branch)
+                    else:
+                        print("Updating", "Hash", mirror.hash, master.hash)
+                        return validate_state(mirror, mirror.address, mirror.get_protocol())
                 
-            for branch in branches:
-                if mirror.https:
-                    futures.append(executor.submit(
-                            validate_state(mirror, mirror.address, "https", branch=branch)
-                            ))
-                elif mirror.http:
-                    futures.append(executor.submit(
-                            validate_state(mirror, mirror.address, "http", branch=branch)
-                            ))
+                futures.append(executor.submit(queue(mirror)))                  
+                for branch in branches:
+                    if branch == "stable" and mirror.stable_hash != master.stable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
 
-        for mirror in mirrors:
+                    elif branch == "testing" and mirror.testing_hash != master.testing_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
+
+                    elif branch == "unstable" and mirror.unstable_hash != master.unstable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
+
+                    elif branch == "arm-stable" and mirror.arm_stable_hash != master.arm_stable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
+
+                    elif branch == "arm-testing" and mirror.arm_testing_hash != master.arm_testing_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
+
+                    elif branch == "arm-unstable" and mirror.arm_unstable_hash != master.arm_unstable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
+                    else:
+                        print(f"Skip", branch)
+            else:
+                print("Skip", mirror.address, mirror.hash, master.hash)
+
             if not mirror.user_notified and not mirror.http and not mirror.https:
-                from src.utils.email import send_email
-                from src.account.models import Account
-                user = Account.query.get(mirror.account_id)
-                mirror.active = False
-                send_email(
-                    user.email,
-                    "Issues found with your manjaro mirror",
-                    f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
-                    )
-                mirror.user_notified = True      
-        
+                    print("Mirror down", mirror.address)
+                    from src.utils.email import send_email
+                    from src.account.models import Account
+                    user = Account.query.get(mirror.account_id)
+                    mirror.active = False
+                    send_email(
+                        user.email,
+                        "Issues found with your manjaro mirror",
+                        f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
+                        )
+                    mirror.user_notified = True
+                      
+            
         db.session.commit()
+        end = time.time()
+        elapsed = end - start
+        seconds = elapsed % (24 * 3600)
+        seconds %= 3600
+        minutes = seconds // 60
+        seconds %= 60
+        print("time: %d:%02d" % (minutes, seconds))
 
 def check_offline_mirrors():
     mirrors = Mirror().query.filter_by(active=False).all()
