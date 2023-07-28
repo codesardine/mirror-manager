@@ -145,7 +145,7 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
                 if not mirror.http and not mirror.https:
                     mirror.active = False
         
-        mirror.save()
+        db.session.add(mirror)
 
 def validate_branches():
     branches = settings["BRANCHES"]
@@ -184,7 +184,8 @@ def validate_branches():
                     f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
                     )
                 mirror.user_notified = True      
-                mirror.save()
+        
+        db.session.commit()
 
 def check_offline_mirrors():
     mirrors = Mirror().query.filter_by(active=False).all()
