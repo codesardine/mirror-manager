@@ -88,7 +88,7 @@ def get_state_contents(file):
     for line in file.splitlines():
         if line.startswith("state="):
             hash = line.split("state=")[1]
-            sync["hash"] = hash
+            sync["hash"] = hash.strip()
         if line.startswith("date="):
             datetime_str = line.split("date=")[1].replace("Z", "")
             iso_format = datetime.fromisoformat(datetime_str)
@@ -107,32 +107,31 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
             if not branch:
                 mirror.last_sync = state_file["last_sync"]
                 mirror.hash = state_file["hash"].strip()
-            else:
-                if not master:
-                    mirror.speed = server["access_time"]
-                
+            else:                
                 if branch == "stable":
-                    mirror.stable_hash = state_file["hash"].strip()
+                    mirror.stable_hash = state_file["hash"]
                     mirror.stable_last_sync = state_file["last_sync"]
+                    if not master:
+                        mirror.speed = server["access_time"]
 
                 elif branch == "testing":
-                    mirror.testing_hash = state_file["hash"].strip()
+                    mirror.testing_hash = state_file["hash"]
                     mirror.testing_last_sync = state_file["last_sync"]
 
                 elif branch == "unstable":
-                    mirror.unstable_hash = state_file["hash"].strip()
+                    mirror.unstable_hash = state_file["hash"]
                     mirror.unstable_last_sync = state_file["last_sync"]
 
                 elif branch == "arm-stable":
-                    mirror.arm_stable_hash = state_file["hash"].strip()
+                    mirror.arm_stable_hash = state_file["hash"]
                     mirror.arm_stable_last_sync = state_file["last_sync"]
 
                 elif branch == "arm-testing":
-                    mirror.arm_testing_hash = state_file["hash"].strip()
+                    mirror.arm_testing_hash = state_file["hash"]
                     mirror.arm_testing_last_sync = state_file["last_sync"]
 
                 elif branch == "arm-unstable":
-                    mirror.arm_unstable_hash = state_file["hash"].strip()
+                    mirror.arm_unstable_hash = state_file["hash"]
                     mirror.arm_unstable_last_sync = state_file["last_sync"]
 
             mirror.save()
