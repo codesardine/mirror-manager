@@ -134,13 +134,15 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
                 elif branch == "arm-unstable":
                     mirror.arm_unstable_hash = state_file["hash"].strip()
                     mirror.arm_unstable_last_sync = state_file["last_sync"]
+
+            mirror.save()
+
         else:
             if not master and not branch:                
                 if not mirror.http and not mirror.https:
                     mirror.active = False
+                    mirror.save()
         
-        db.session.add(mirror)
-
 def validate_branches():
     branches = settings["BRANCHES"]
     mirrors = Mirror().query.filter_by(active=True).all()
@@ -196,9 +198,8 @@ def validate_branches():
                         f"Your Manjaro mirror {mirror.address} has been deactivated, fix any issues with your server and Mirror Manager will reactivate your mirror."
                         )
                     mirror.user_notified = True
+                    mirror.save()
                       
-            
-        db.session.commit()
         end = time.time()
         elapsed = end - start
         seconds = elapsed % (24 * 3600)
@@ -293,6 +294,8 @@ def check_unsync_mirrors():
                 if mirror.points != settings["POINTS_DAYS"]:
                     mirror.points = mirror.points + 1
 
+        mirror.save()
+
 def populate_master_state():
     branches = settings["BRANCHES"]
     repo = settings["MASTER_RSYNC"]
@@ -305,11 +308,10 @@ def populate_master_state():
     file = get_state_contents(server["state_file"])
     master_mirror.hash = file["hash"]
     master_mirror.last_sync = file["last_sync"]
-    master_mirror.save()  
-
+    master_mirror.save()
     for branch in branches:
        validate_state(master_mirror, repo, protocol, branch=branch, master=True)    
-    
+           
 def remove_unused_accounts():
     from src.utils.email import send_email
     from src.account.models import Account
