@@ -21,6 +21,7 @@ if "import-mirrors" in sys.argv:
         from src.mirrors.models import Mirror
         from src.mirrors.utils import test_rsync, test_country, sanitize_url, state_check
         import requests
+
         headers = {'Accept': 'application/json'}
         response = requests.get('https://repo.manjaro.org/status.json', headers=headers)
         mirrors = response.json()
@@ -30,7 +31,6 @@ if "import-mirrors" in sys.argv:
             for p in mirror["protocols"]:
                 if p == "https":
                     https = True
-                    pass
 
                 if p == "http":
                     http = True
@@ -42,7 +42,7 @@ if "import-mirrors" in sys.argv:
                     country = test_country(mirror["country"].replace("_", " "))
                 else:
                     try:
-                        country = mirror.country
+                        country = mirror.country.lower()
                     except AttributeError:
                         print("error", mirror)
                         country = "unknown"
@@ -53,7 +53,6 @@ if "import-mirrors" in sys.argv:
                     status = state_check("http", url)
 
                 try:
-                    ip = status["ip"]                
                     db.session.add(
                         Mirror(
                         address=url,
@@ -64,7 +63,7 @@ if "import-mirrors" in sys.argv:
                         http=http,
                         https=https,
                         speed = 0,
-                        ip_whitelist=ip
+                        ip_whitelist=status["ip"]
                         )
                     )
                 

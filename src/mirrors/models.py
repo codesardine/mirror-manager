@@ -1,8 +1,8 @@
 from src.utils.extensions import db
 from src.utils.config import settings
+from src.models import DbMixin
 
-
-class ModelBase():
+class ModelBase(DbMixin):
     id = db.Column(db.Integer, primary_key=True) 
     last_modified = db.Column(db.DateTime, nullable=True)
     hash = db.Column(db.String(100))
@@ -14,10 +14,6 @@ class ModelBase():
             remove_time = self.last_sync.split(" ")[0]
             return datetime.strptime(remove_time, '%Y-%m-%d').date()
         return 999
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
 
 
 class MasterRepo(db.Model, ModelBase):   
@@ -74,9 +70,18 @@ class Mirror(db.Model, ModelBase):
 
     def get_protocol(self):
         if self.http:
-            return "http"
-        elif self.https:
             return "https"
+        elif self.https:
+            return "http"
+    
+    def protocols(self):
+        protocols = []
+        if self.http:
+            protocols.append("http")
+        if self.https:
+            protocols.append("https")
+        
+        return protocols
 
     def get_points(self):
         return f"{int(self.points/settings['MAX_POINTS']*100)}%"
@@ -135,7 +140,3 @@ class Mirror(db.Model, ModelBase):
         master = MasterRepo().query.get(1)
         delta = master.last_sync_date() - date
         return delta.days
-    
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()

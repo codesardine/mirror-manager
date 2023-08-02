@@ -8,6 +8,11 @@ import concurrent.futures
 import socket
 from dateutil.parser import parse as parsedate
 
+def get_state_path(branch=None):
+    if branch != None:
+        return f"{branch}/state"  
+    else:
+        return "state"
 
 def headers():
     return {
@@ -46,42 +51,43 @@ def validate_ownership(protocol, address, file):
     
     return True
 
-def state_check(protocol, address, branch=None):    
-    if branch:
-        file = f"{branch}/state"
-    else:
-        file = "state"
-    
-    start = time.time()
-    target = f"{protocol}://{address}{file}"
-
-    def get_ipv4(response):
-        return response.raw._connection.sock.getpeername()[0]
-    
-    def get_ipv6():
+def get_ip(address):  
+        url = address.split("/")[0]
+        ip = socket.getaddrinfo(url, None)
+        ipv4 = ip[0][4][0]
+        print(ipv4)
         try:
-            return socket.getaddrinfo(address, None, family=socket.AF_INET6)[0][4][0]
-        except Exception as e:
-            print(e)
-            return ""
+            ipv6 = ip[3][4][0]
+            print(ipv6)
+            return f"{ipv4} {ipv6}"
+        except IndexError:
+            return ipv4
+
+def state_check(protocol, address, branch=None):             
+    start = time.time()
+    target = f"{protocol}://{address}{get_state_path(branch)}"
 
     try:
         response = requests.get(f'{target}', headers=headers(), timeout=3, stream=True)
         response.raise_for_status()
         end = time.time()
         elapsed = end - start
-        ip = get_ipv4(response)
+        
     except HTTPError:
         return {"state_file_exists": False}
     except Exception: 
         return {"state_file_exists": False}
     
-    return {
+    json = {
         "state_file_exists": True,
-        "access_time": str(elapsed)[:5],
         "state_file": response.text,
-        "ip": f"{ip} {get_ipv6()}"
         }
+    
+    if not branch:
+        json["ip"] = get_ip(address)
+        json["access_time"] = str(elapsed)[:5]
+    
+    return json
     
 def get_state_contents(file):
     sync = {}
@@ -107,12 +113,11 @@ def validate_state(mirror, address, protocol, master=False, branch=None):
             if not branch:
                 mirror.last_sync = state_file["last_sync"]
                 mirror.hash = state_file["hash"].strip()
+                mirror.speed = server["access_time"]
             else:                
                 if branch == "stable":
                     mirror.stable_hash = state_file["hash"]
-                    mirror.stable_last_sync = state_file["last_sync"]
-                    if not master:
-                        mirror.speed = server["access_time"]
+                    mirror.stable_last_sync = state_file["last_sync"]                        
 
                 elif branch == "testing":
                     mirror.testing_hash = state_file["hash"]
@@ -153,35 +158,35 @@ def validate_branches():
             print()
             print(mirror.address, mirror.get_protocol())
             if mirror.hash != master.hash:
-                def queue(mirror, branch=None):
-                    if branch:
-                        print(f"Updating", branch, mirror.hash, master.hash)
-                        return validate_state(mirror, mirror.address, mirror.get_protocol(), branch=branch)
-                    else:
-                        print("Updating", "Hash", mirror.hash, master.hash)
-                        return validate_state(mirror, mirror.address, mirror.get_protocol())
-                
-                futures.append(executor.submit(queue(mirror)))                  
-                for branch in branches:
-                    if branch == "stable" and mirror.stable_hash != master.stable_hash:
-                        futures.append(executor.submit(queue(mirror, branch)))
+                    def queue(mirror, branch=None):
+                        if branch:
+                            print(f"Updating", branch, mirror.hash, master.hash)
+                            return validate_state(mirror, mirror.address, mirror.get_protocol(), branch=branch)
+                        else:
+                            print("Updating", "Hash", mirror.hash, master.hash)
+                            return validate_state(mirror, mirror.address, mirror.get_protocol())
+                    
+                    futures.append(executor.submit(queue(mirror)))                  
+                    for branch in branches:
+                        if branch == "stable" and mirror.stable_hash != master.stable_hash:
+                            futures.append(executor.submit(queue(mirror, branch)))
 
-                    elif branch == "testing" and mirror.testing_hash != master.testing_hash:
-                        futures.append(executor.submit(queue(mirror, branch)))
+                        elif branch == "testing" and mirror.testing_hash != master.testing_hash:
+                            futures.append(executor.submit(queue(mirror, branch)))
 
-                    elif branch == "unstable" and mirror.unstable_hash != master.unstable_hash:
-                        futures.append(executor.submit(queue(mirror, branch)))
+                        elif branch == "unstable" and mirror.unstable_hash != master.unstable_hash:
+                            futures.append(executor.submit(queue(mirror, branch)))
 
-                    elif branch == "arm-stable" and mirror.arm_stable_hash != master.arm_stable_hash:
-                        futures.append(executor.submit(queue(mirror, branch)))
+                        elif branch == "arm-stable" and mirror.arm_stable_hash != master.arm_stable_hash:
+                            futures.append(executor.submit(queue(mirror, branch)))
 
-                    elif branch == "arm-testing" and mirror.arm_testing_hash != master.arm_testing_hash:
-                        futures.append(executor.submit(queue(mirror, branch)))
+                        elif branch == "arm-testing" and mirror.arm_testing_hash != master.arm_testing_hash:
+                            futures.append(executor.submit(queue(mirror, branch)))
 
-                    elif branch == "arm-unstable" and mirror.arm_unstable_hash != master.arm_unstable_hash:
-                        futures.append(executor.submit(queue(mirror, branch)))
-                    else:
-                        print(f"Skip", branch)
+                        elif branch == "arm-unstable" and mirror.arm_unstable_hash != master.arm_unstable_hash:
+                            futures.append(executor.submit(queue(mirror, branch)))
+                        else:
+                            print(f"Skip", branch)
             else:
                 print("Skip", mirror.address, mirror.hash, master.hash)
 
@@ -198,7 +203,7 @@ def validate_branches():
                         )
                     mirror.user_notified = True
                     mirror.save()
-                      
+                    
         end = time.time()
         elapsed = end - start
         seconds = elapsed % (24 * 3600)
@@ -209,24 +214,18 @@ def validate_branches():
 
 def check_offline_mirrors():
     mirrors = Mirror().query.filter_by(active=False).all()
-    for mirror in mirrors:
-        protocols = {
-            "http": False,
-            "https": False
-        }
-        
-        for protocol in protocols:
+    for mirror in mirrors:      
+        for protocol in mirror.get_protocols():
             server = state_check(protocol, mirror.address)
             if server["state_file_exists"]:
-                protocols[protocol] = server["state_file_exists"]
                 mirror.speed = server["access_time"]
                 mirror.user_notified = False
                 mirror.active = True
             
                 if "https" in protocol:
-                    mirror.https = True
+                    mirror.https = server["state_file_exists"]
                 elif "http" in protocol:
-                    mirror.http = True
+                    mirror.http = server["state_file_exists"]
                     
         if mirror.active:
             from src.utils.email import send_email
@@ -251,6 +250,11 @@ def check_unsync_mirrors():
     for mirror in mirrors:
         user = Account.query.get(mirror.account_id)
         if mirror.is_out_sync():
+            def remove_point():
+                if mirror.points >= 1:
+                    mirror.points = mirror.points - 1
+                    mirror.save()
+
             print("Outdated:", mirror.address, mirror.is_outdated_by(), mirror.last_sync_date())
             subject = f"Mirror out of sync for {mirror.is_outdated_by()} days"
             message = f"Your Manjaro mirror {mirror.address}, is outdated for {mirror.is_outdated_by()} days"
@@ -273,6 +277,7 @@ def check_unsync_mirrors():
                     )
                 
             elif mirror.is_outdated_by() >= 7:
+                remove_point()
                 send_email(
                     user.email,
                     subject,
@@ -280,20 +285,19 @@ def check_unsync_mirrors():
                     )
                 
             elif mirror.is_outdated_by() == 1:
+                remove_point()
                 send_email(
                     user.email,
                     subject,
                     message
                     ) 
             
-            if mirror.is_outdated_by() >= 1 and mirror.is_outdated_by() <= 14:
-                if mirror.points >= 1:
-                    mirror.points = mirror.points - 1
+            elif mirror.is_outdated_by() >= 1 and mirror.is_outdated_by() <= 14:
+                remove_point()
             else:
-                if mirror.points != settings["POINTS_DAYS"]:
+                if mirror.points != settings["MAX_POINTS"]:
                     mirror.points = mirror.points + 1
-
-        mirror.save()
+                    mirror.save()
 
 def populate_master_state():
     branches = settings["BRANCHES"]
@@ -308,6 +312,7 @@ def populate_master_state():
     master_mirror.hash = file["hash"]
     master_mirror.last_sync = file["last_sync"]
     master_mirror.save()
+    print(master_mirror.hash)
     for branch in branches:
        validate_state(master_mirror, repo, protocol, branch=branch, master=True)    
            
@@ -322,8 +327,7 @@ def remove_unused_accounts():
         defined_days = today - timedelta(days=1)
 
         if mirrors == None and created_on < defined_days:
-            db.session.delete(account)
-            db.session.commit()
+            account.delete()
             send_email(
                 account.email,
                 "Your account has been deleted",
@@ -377,28 +381,14 @@ def sanitize_url(url):
 
     return url.strip().replace(" ", "")
 
-def is_out_of_date(mirror):
-        #TODO refractor for last modified
-        if not mirror.hash:
-            return True
-        if mirror.https:
-            protocol = "https"
-        else:
-            protocol = "http"
+def get_last_modified_headers(mirror, branch=""):
+        if mirror.hash:    
+            if branch:
+                state = f"{branch}/state"  
+            else:
+                state = "state"  
 
-        target = protocol+"://"+mirror.address+"state"
-        response = requests.head(url=target, timeout=3, headers=headers()) 
-        try:
-            remote_datetime = parsedate(response.headers['Last-Modified']).replace(tzinfo=None)
+            target = f"{mirror.get_protocol()}://{mirror.address}{state}"
+            response = requests.head(url=target, timeout=3, headers=headers()) 
+            return parsedate(response.headers['Last-Modified']).replace(tzinfo=None)
             
-            if not mirror.last_modified:
-                mirror.last_modified = remote_datetime
-                mirror.save()
-            
-            if  remote_datetime > mirror.last_modified:
-                mirror.last_modified = remote_datetime
-                mirror.save()
-                return True
-            return False
-        except KeyError:
-            return False

@@ -72,8 +72,6 @@ def signup_post():
     account.is_admin = False
     account.is_confirmed = False
     account.confirmed_on = None
-    db.session.add(account)
-
     token = generate_token(account.email)
     confirm_url = url_for("account.confirm_email", token=token, _external=True)
     html = render_template("confirm_email.html", confirm_url=confirm_url)
@@ -81,7 +79,7 @@ def signup_post():
 
     try:
         send_email(account.email, subject, html)
-        db.session.commit()
+        account.save()
         login_user(account)
         flash("A confirmation email has been sent via email.")
         return redirect(url_for("account.user_account"))

@@ -15,14 +15,13 @@ def _iter_mirrors():
     mirrors = []
     for mirror in query:
         country = mirror.country.replace(" ", "_")
-        protocols = []
         if "russian" in country:
             country = "russia"
 
         template = {
         "country": country,
         "url": mirror.address,
-        "protocols": protocols,
+        "protocols": mirror.protocols(),
         "branches": [],
         "speed": mirror.speed            
         }
@@ -56,11 +55,6 @@ def _iter_mirrors():
             template["branches"].append(0)
         else:
             template["branches"].append(1)            
-
-        if mirror.http:
-            protocols.append("http")
-        if mirror.https:
-            protocols.append("https")
         
         mirrors.append(template)
 
@@ -104,16 +98,11 @@ def mirror_post():
     if mirror_validation_token:
         from src.mirrors.utils import validate_ownership
         mirror = Mirror.query.get(mirror_id)
-        if mirror.https:
-            protocol = "https"
-        else:
-            protocol = "http"
 
-        is_valid = validate_ownership(protocol, mirror.address, mirror_validation_token)
+        is_valid = validate_ownership(mirror.get_protocol(), mirror.address, mirror_validation_token)
         if is_valid:
             mirror.account_id = current_user.id
-            db.session.add(mirror)
-            db.session.commit()
+            mirror.save()
             flash(f'Mirror has been added to you account')
             return redirect(url_for('mirror.my_mirrors'))
         else:
@@ -126,23 +115,20 @@ def mirror_post():
             mirror = Mirror.query.get(mirror_id)
 
             if delete_mirror:
-                db.session.delete(mirror)
-                db.session.commit()
+                mirror.delete()
                 flash(f'Mirror Deleted')
                 return redirect(url_for('mirror.my_mirrors'))
 
             if active and mirror_id:
                 mirror.active = True
                 mirror.user_notified = False
-                db.session.add(mirror)
-                db.session.commit()
+                mirror.save()
                 flash(f'Mirror Enabled')
                 return redirect(url_for('mirror.my_mirrors'))
 
             elif not active and mirror_id:
                 mirror.active = False
-                db.session.add(mirror)
-                db.session.commit()
+                mirror.save()
                 flash(f'Mirror Disabled', "warning")
                 return redirect(url_for('mirror.my_mirrors'))
             
@@ -168,14 +154,11 @@ def mirror_post():
                 "rsync": False
             }
             
-            speed = 0
-            ip = None
             for protocol in protocols:
                 if "http" in protocol:
                     server = state_check(protocol, address)
                     if server["state_file_exists"]:
                         protocols[protocol] = server["state_file_exists"]
-                        speed = server["access_time"]
                         ip = server["ip"]
                 else:
                     from src.mirrors.utils import test_rsync
@@ -199,7 +182,7 @@ def mirror_post():
                 active=True,
                 http=protocols["http"],
                 https=protocols["https"],
-                speed = speed,
+                speed = server["access_time"],
                 ip_whitelist=ip
                 )
             )

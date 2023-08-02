@@ -20,8 +20,7 @@ def account_post():
     delete_account = request.form.get('delete-account')
     if delete_account:
         acc = Account.query.get(account_id)
-        db.session.delete(acc)
-        db.session.commit()
+        acc.delete()
         flash(f'Account Deleted, good bye.')
         return redirect(url_for('main.index'))
 
@@ -36,8 +35,7 @@ def confirm_email(token):
     if user.email == email:
         user.is_confirmed = True
         user.confirmed_on = datetime.now()
-        db.session.add(user)
-        db.session.commit()
+        user.save()
         flash("You have confirmed your account. Thanks!")
         return redirect(url_for("mirror.my_mirrors"))
     else:
