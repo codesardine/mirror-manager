@@ -46,8 +46,8 @@ def signup_post():
     password_confirm = request.form.get('password_confirm')
 
     if Account.query.filter_by(email=email).first():
-        flash('Email address already exists', "error")
-        return redirect(url_for('auth.signup'))
+        flash('Email address already exists', "warning")
+        return redirect(url_for('auth.login'))
 
     if not email:
         flash('Please insert a email address.', "warning")
