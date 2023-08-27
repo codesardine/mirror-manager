@@ -5,6 +5,9 @@ from src.account.models import Account
 from datetime import datetime
 from src.account.token import confirm_token, generate_token
 from src.utils import email
+from .token import verify_reset_token
+from werkzeug.security import generate_password_hash
+
 
 account = Blueprint("account", __name__)
 
@@ -41,6 +44,28 @@ def confirm_email(token):
     else:
         flash("The confirmation link is invalid or has expired.", "error")
     return redirect(url_for("account.user_account"))
+
+@account.route("/password-reset/<token>", methods=['GET'])
+def reset_password(token):
+    user = verify_reset_token(token)
+    if user:
+        return render_template("password_reset.html", token=token)
+    return redirect(url_for("auth.login"))
+
+@account.route("/password-reset/<token>", methods=['POST'])
+def reset_password_post(token):
+    user = verify_reset_token(token)    
+    new_password = request.form.get('new_password')
+    password_confirm = request.form.get('confirm_password')
+    if new_password and password_confirm  and new_password == password_confirm and " " not in new_password:
+        user.password = generate_password_hash(new_password)
+        user.save()
+        flash("You new password was saved")
+    else:
+        flash("You password fields do not match or have empty spaces", "warning")
+        return render_template("password_reset.html", token=token)
+    
+    return redirect(url_for("auth.login"))
 
 @account.route("/resend")
 @login_required

@@ -15,8 +15,20 @@
                       <input name="remember" type="checkbox" checked="checked" class="checkbox checkbox-success" />
                     </label>
                   </div>
-                <button class="btn btn-success mb-2">Login</button>
+                  <button class="btn btn-success mb-2">Login</button>
+                <div class="grid grid-row-1 gap-4 justify-center justify-items-center w-full">
+                  <button id="passRecoverBtn" class="mb-2 hover:underline">Recover Password</button>
+                  <input id="recover" name="recover" type="checkbox" class="hidden" />
+                </div>
         </form>
     </div>
 </div>
+<script>
+    let btn = document.querySelector("#passRecoverBtn")
+    btn.onclick = function (ev) {
+      let recover = document.querySelector("#recover")
+      recover.checked = true  
+      console.log(revover, btn, ev)   
+    }
+</script>
 {% endblock %}

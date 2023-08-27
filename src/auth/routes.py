@@ -20,19 +20,38 @@ def login_post():
     email = request.form.get('email')
     password = request.form.get('password')
     remember = True if request.form.get('remember') else False
-
+    recover = True if request.form.get('recover') else False
     account = Account.query.filter_by(email=email).first()
 
-    if not account or not check_password_hash(account.password, password):
-        flash('Please check your login details and try again.', "warning")        
-        return redirect(url_for('auth.login')) 
+    if recover:
+        if email:
+            token = account.get_reset_token()
+            html = render_template("recover-password.html", token=token, url=request.host_url)
+            subject = "Password Recover"
 
-    login_user(account, remember=remember)
-    next = request.args.get('next')
-    if not is_safe_url(next):
-        return abort(400)
+            try:
+                send_email(account.email, subject, html)
+                flash("A confirmation email has been sent via email.")
+                return redirect(url_for("main.index"))
+            except Exception as e:
+                print(e)
+                flash("Enable to send recovery email.", "warning")
+                return redirect(url_for('auth.login')) 
+        else:
+            flash("Please insert your email address.", "warning")
+            return redirect(url_for('auth.login'))
 
-    return redirect(next or url_for('mirror.my_mirrors'))
+    else:
+        if not account or not check_password_hash(account.password, password):
+            flash('Please check your login details and try again.', "warning")        
+            return redirect(url_for('auth.login')) 
+
+        login_user(account, remember=remember)
+        next = request.args.get('next')
+        if not is_safe_url(next):
+            return abort(400)
+
+        return redirect(next or url_for('mirror.my_mirrors'))
 
 @auth.route("/signup")
 def signup():
