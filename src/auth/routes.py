@@ -26,7 +26,7 @@ def login_post():
     if recover:
         if email:
             token = account.get_reset_token()
-            html = render_template("recover-password.html", token=token, url=request.host_url)
+            html = render_template("email/recover-password.html", token=token, url=request.host_url)
             subject = "Password Recover"
 
             try:
@@ -93,7 +93,7 @@ def signup_post():
     account.confirmed_on = None
     token = generate_token(account.email)
     confirm_url = url_for("account.confirm_email", token=token, _external=True)
-    html = render_template("confirm_email.html", confirm_url=confirm_url)
+    html = render_template("email/confirm_email.html", confirm_url=confirm_url)
     subject = "Please confirm your email"
 
     try:

@@ -2,6 +2,12 @@
 from flask_mail import Message
 from .config import settings
 from src import mail
+from threading import Thread
+from src import app
+
+def send_email_task(app, msg):
+    with app.app_context():
+        mail.send(msg)
 
 
 def send_email(to, subject, template):
@@ -11,5 +17,6 @@ def send_email(to, subject, template):
         html=template,
         sender=settings["MAIL_DEFAULT_SENDER"],
     )
-    mail.send(msg)
+
+    Thread(target=send_email_task, args=(app, msg)).start()
     
