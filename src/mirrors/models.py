@@ -14,6 +14,16 @@ class ModelBase(DbMixin):
             remove_time = self.last_sync.split(" ")[0]
             return datetime.strptime(remove_time, '%Y-%m-%d').date()
         return 999
+    
+    def last_sync_time(self):
+        from datetime import datetime
+        if self.last_sync != None:
+            remove_date = self.last_sync.split(" ")[1]
+            time = datetime.strptime(remove_date, '%H:%M').time()
+            if f"{time}"[0] == "0":
+                return f"{time}".rpartition(':')[0][1:]
+            return f"{time}".rpartition(':')[0]
+ 
 
 
 class MasterRepo(db.Model, ModelBase):   

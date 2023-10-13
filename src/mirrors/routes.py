@@ -23,7 +23,9 @@ def _iter_mirrors():
         "url": mirror.address,
         "protocols": mirror.protocols(),
         "branches": [],
-        "speed": mirror.speed            
+        "speed": mirror.speed,
+        "last_sync": f"{mirror.last_sync_date()} {mirror.last_sync_time()}",
+        "score": mirror.points           
         }
         
         if not mirror.stable_in_sync():
