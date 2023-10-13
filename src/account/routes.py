@@ -60,9 +60,9 @@ def reset_password_post(token):
     if new_password and password_confirm  and new_password == password_confirm and " " not in new_password:
         user.password = generate_password_hash(new_password)
         user.save()
-        flash("You new password was saved")
+        flash("Your new password was saved")
     else:
-        flash("You password fields do not match or have empty spaces", "warning")
+        flash("Your password fields do not match or have empty spaces", "warning")
         return render_template("password_reset.html", token=token)
     
     return redirect(url_for("auth.login"))
