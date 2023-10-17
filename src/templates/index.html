@@ -26,7 +26,6 @@
         <option value="x64" {% if select != 'arm'%}selected{% endif %}>X64</option>
         <option value="arm" {% if select == 'arm'%}selected{% endif %}>ARM</option>
       </select>
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     </form>
     <script>
       const select = document.querySelector("#arch-select")
