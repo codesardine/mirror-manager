@@ -5,7 +5,6 @@ from datetime import datetime, date, timedelta
 from src.utils.config import settings
 import concurrent.futures
 import socket
-from dateutil.parser import parse as parsedate
 
 def get_state_path(branch=None):
     if branch != None:
