@@ -2,7 +2,6 @@ import requests, time
 from requests.exceptions import HTTPError
 from src.mirrors.models import Mirror, MasterRepo
 from datetime import datetime, date, timedelta
-from src.utils.extensions import db
 from src.utils.config import settings
 import concurrent.futures
 import socket
@@ -103,10 +102,7 @@ def get_state_contents(file):
     return sync
 
 def validate_state(mirror, address, protocol, master=False, branch=None):
-        if branch:
-            server = state_check(protocol, address=address, branch=branch)
-        else:
-            server = state_check(protocol, address=address)
+        server = state_check(protocol, address=address, branch=branch)
             
         if server["state_file_exists"]:
             state_file = get_state_contents(server["state_file"])
@@ -158,35 +154,35 @@ def validate_branches():
             print()
             print(mirror.address, mirror.get_protocol())
             if mirror.hash != master.hash:
-                    def queue(mirror, branch=None):
-                        if branch:
-                            print(f"Updating", branch, mirror.hash, master.hash)
-                            return validate_state(mirror, mirror.address, mirror.get_protocol(), branch=branch)
-                        else:
-                            print("Updating", "Hash", mirror.hash, master.hash)
-                            return validate_state(mirror, mirror.address, mirror.get_protocol())
-                    
-                    futures.append(executor.submit(queue(mirror)))                  
-                    for branch in branches:
-                        if branch == "stable" and mirror.stable_hash != master.stable_hash:
-                            futures.append(executor.submit(queue(mirror, branch)))
+                def queue(mirror, branch=None):
+                    if branch:
+                        print(f"Updating", branch, mirror.hash, master.hash)
+                        return validate_state(mirror, mirror.address, mirror.get_protocol(), branch=branch)
+                    else:
+                        print("Updating", "Hash", mirror.hash, master.hash)
+                        return validate_state(mirror, mirror.address, mirror.get_protocol())
+                
+                futures.append(executor.submit(queue(mirror)))                  
+                for branch in branches:
+                    if branch == "stable" and mirror.stable_hash != master.stable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
 
-                        elif branch == "testing" and mirror.testing_hash != master.testing_hash:
-                            futures.append(executor.submit(queue(mirror, branch)))
+                    elif branch == "testing" and mirror.testing_hash != master.testing_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
 
-                        elif branch == "unstable" and mirror.unstable_hash != master.unstable_hash:
-                            futures.append(executor.submit(queue(mirror, branch)))
+                    elif branch == "unstable" and mirror.unstable_hash != master.unstable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
 
-                        elif branch == "arm-stable" and mirror.arm_stable_hash != master.arm_stable_hash:
-                            futures.append(executor.submit(queue(mirror, branch)))
+                    elif branch == "arm-stable" and mirror.arm_stable_hash != master.arm_stable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
 
-                        elif branch == "arm-testing" and mirror.arm_testing_hash != master.arm_testing_hash:
-                            futures.append(executor.submit(queue(mirror, branch)))
+                    elif branch == "arm-testing" and mirror.arm_testing_hash != master.arm_testing_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
 
-                        elif branch == "arm-unstable" and mirror.arm_unstable_hash != master.arm_unstable_hash:
-                            futures.append(executor.submit(queue(mirror, branch)))
-                        else:
-                            print(f"Skip", branch)
+                    elif branch == "arm-unstable" and mirror.arm_unstable_hash != master.arm_unstable_hash:
+                        futures.append(executor.submit(queue(mirror, branch)))
+                    else:
+                        print(f"Skip", branch)
             else:
                 print("Skip", mirror.address, mirror.hash, master.hash)
 
@@ -380,15 +376,4 @@ def sanitize_url(url):
         url = url.split("://")[1]
 
     return url.strip().replace(" ", "")
-
-def get_last_modified_headers(mirror, branch=""):
-        if mirror.hash:    
-            if branch:
-                state = f"{branch}/state"  
-            else:
-                state = "state"  
-
-            target = f"{mirror.get_protocol()}://{mirror.address}{state}"
-            response = requests.head(url=target, timeout=3, headers=headers()) 
-            return parsedate(response.headers['Last-Modified']).replace(tzinfo=None)
             
