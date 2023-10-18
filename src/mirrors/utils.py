@@ -1,7 +1,7 @@
 import requests, time
 from requests.exceptions import HTTPError
 from src.mirrors.models import Mirror, MasterRepo
-from datetime import datetime, date, timedelta
+import datetime
 from src.utils.config import settings
 import concurrent.futures
 import socket
@@ -94,10 +94,9 @@ def get_state_contents(file):
             hash = line.split("state=")[1]
             sync["hash"] = hash.strip()
         if line.startswith("date="):
-            datetime_str = line.split("date=")[1].replace("Z", "")
-            iso_format = datetime.fromisoformat(datetime_str)
-            date = '{:%Y-%m-%d %H:%M}'.format(iso_format)
-            sync["last_sync"] = date
+            datetime_str = line.split("date=")[1] 
+            d = datetime.datetime.fromisoformat(datetime_str[:-1]).astimezone(datetime.timezone.utc)
+            sync["last_sync"] = d.strftime('%Y-%m-%d %H:%M')
     return sync
 
 def validate_state(mirror, address, protocol, master=False, branch=None):
